@@ -186,6 +186,11 @@
   .sec.alert { background: #fff8e6; border: 1px solid #ffe6b0; }
   .sec.alert .sec-title { color: #8a6100; }
   .sec.safe { background: #DCE9C9; border: 1px solid #A3BC82; }
+  /* 报告层级配色：终极综合报告（深抹茶绿）> 模块汇总报告（浅抹茶绿，低一级） */
+  #s-comp .sec   { background: #DCE9C9; border: 1px solid #B9CF9C; }
+  #s-tabrep .sec { background: #EAF1DA; border: 1px solid #D3E1BE; }
+  #s-comp .sec.alert, #s-tabrep .sec.alert { background: #fff8e6; border-color: #ffe6b0; }
+  #s-comp .sec.safe,  #s-tabrep .sec.safe  { background: #CBE0B6; border-color: #A3BC82; }
   .mini-tag { display: inline-block; font-size: 11.5px; padding: 2px 8px; border-radius: 999px; background: var(--p-light); color: var(--p-dark); margin-right: 5px; }
   .author { text-align: center; font-size: 13px; color: var(--t2); margin: 18px 0 8px; }
   .soft-ad { font-size: 13px; color: var(--t2); background: #fff; border-radius: 12px; padding: 14px; margin-bottom: 12px; line-height: 1.7; }
@@ -256,24 +261,6 @@
   }
   .miss-row:last-child { border-bottom: none; }
   .miss-row span { color: var(--t3); flex-shrink: 0; }
-/* ===== 打印报告（首页下载PDF） ===== */
-#print-report { display: none; }
-@media print {
-  @page { size: A4; margin: 14mm; }
-  body { background: #fff !important; }
-  .app { display: none !important; }
-  .gate { display: none !important; }
-  #print-report { display: block !important; font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; color: #111; }
-  #print-report h1 { font-size: 18px; margin: 0 0 4px; }
-  #print-report .pr-meta { font-size: 11px; color: #666; margin: 0 0 10px; }
-  #print-report table { width: 100%; border-collapse: collapse; font-size: 11px; }
-  #print-report th, #print-report td { text-align: left; padding: 4px 6px; border-bottom: 1px solid #e0e0e0; }
-  #print-report th { border-bottom: 2px solid #999; }
-  #print-report p { font-size: 11px; margin: 3px 0; }
-  #print-report .pr-summary-title { font-size: 13px; font-weight: 700; margin: 12px 0 4px; }
-  #print-report .pr-foot { font-size: 10px; color: #777; margin-top: 10px; }
-  #print-report tr, #print-report p, #print-report .pr-summary-title { break-inside: avoid; }
-}
 /* ===== 访问门禁 ===== */
 .gate {
   position: fixed;
@@ -321,6 +308,18 @@
   cursor: pointer;
 }
 .gate-error { margin-top: 12px; font-size: 13px; color: var(--danger); min-height: 18px; }
+/* ===== 微信端报告图片保存 ===== */
+.img-save-mask {
+  position: fixed; inset: 0; z-index: 10000; background: rgba(0,0,0,.72);
+  display: flex; align-items: center; justify-content: center; padding: 18px;
+}
+.img-save-card {
+  background: #fff; border-radius: 16px; padding: 16px; width: 100%;
+  max-width: 420px; max-height: 92vh; overflow: auto; text-align: center;
+}
+.img-save-card img { width: 100%; border-radius: 8px; display: block; }
+.img-save-hint { font-size: 13px; color: #5c6470; margin: 12px 0 6px; line-height: 1.7; }
+.img-save-close { margin-top: 10px; width: 100%; padding: 13px; background: var(--p); color: #fff; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; font-family: inherit; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -362,6 +361,7 @@
     <div class="card guide-body" id="g-body"></div>
     <div class="btn-row">
       <button class="btn btn-primary" id="g-start">开始测试</button>
+      <button class="btn btn-ghost" id="g-retest" style="display:none;">重新测试</button>
       <button class="btn btn-ghost" onclick="showHome()">← 返回首页</button>
     </div>
   </div>
@@ -401,7 +401,8 @@
       <div>本测试仅作初筛参考，不能替代专业医生的临床诊断。</div>
     </div>
     <div class="btn-row">
-      <button class="btn btn-primary" onclick="showHome()">返回首页</button>
+      <button class="btn btn-primary" id="r-next">下一个测试 →</button>
+      <button class="btn btn-outline" onclick="showHome()">返回首页</button>
       <button class="btn btn-ghost" id="r-retry">重新测试</button>
     </div>
   </div>
@@ -455,8 +456,6 @@
   </div>
 
 </div>
-
-<div id="print-report"></div>
 
 <script>
 /* =====================================================================
@@ -818,7 +817,7 @@ const MODULES = [
       tag: "模块一 · 核心筛查",
       body: `<p>ASRS 是国际上最常用的成人 ADHD 初筛量表。它评估你<strong>近 6 个月</strong>的状态。</p>
         <div class="guide-point"><span class="ic">📌</span><span>请按<strong>最近半年</strong>的真实频率作答，不要按某一天的状态判断。</span></div>
-        <div class="guide-point"><span class="ic">🕐</span><span>共 18 题，约 5 分钟。凭第一直觉选择即可。</span></div>`
+        <div class="guide-point"><span class="ic">💡</span><span>凭第一直觉选择即可，不必在某一题上反复斟酌。</span></div>`
     }
   },
   {
@@ -852,7 +851,7 @@ const MODULES = [
       tag: "模块一 · 核心筛查",
       body: `<p>本测试以<strong>成年人</strong>的身份，回看你 <strong>8-12 岁</strong>（小学阶段）的状态。它不是给儿童做的，而是成年人的回溯评估。</p>
         <div class="guide-point warn"><span class="ic">💡</span><span>回溯童年可能勾起一些回忆，请先调整好心态。答案没有对错，按印象作答即可。</span></div>
-        <div class="guide-point"><span class="ic">🕐</span><span>共 25 题，约 4 分钟。若记忆模糊，可请家人帮你印证。</span></div>`
+        <div class="guide-point"><span class="ic">💡</span><span>若记忆模糊，可请家人帮你印证，按整体印象作答即可。</span></div>`
     }
   },
   {
@@ -897,9 +896,9 @@ const MODULES = [
     guide: {
       title: "DSM-5 症状核对清单",
       tag: "模块一 · 核心筛查",
-      body: `<p>这是 DSM-5 诊断标准里的 18 个症状条目：9 条注意力不集中、9 条多动冲动。</p>
+      body: `<p>以下 18 个条目，前 9 条与<strong>注意力</strong>有关，后 9 条与<strong>多动和冲动</strong>有关。</p>
         <div class="guide-point"><span class="ic">📌</span><span><strong>对照日常表现</strong>，勾选符合你的情况。前提是经常如此，而不是偶发。</span></div>
-        <div class="guide-point warn"><span class="ic">💡</span><span>成人标准：每个维度 <strong>≥5 条</strong>提示该维度显著；两个维度都显著即混合型。</span></div>`
+        <div class="guide-point warn"><span class="ic">💡</span><span>请按<strong>第一反应</strong>作答，不要反复权衡，也不要考虑别人会怎么看。</span></div>`
     }
   },
   {
@@ -918,9 +917,9 @@ const MODULES = [
       let h = "";
       if (r.score >= 65) {
         h += `<p>你的得分 <strong>${r.score} 分</strong>，达到 65 分的提示线，说明你在社交理解、感官敏感、偏好规律、兴趣深度等方面，呈现出较多<strong>孤独谱系（ASD）特质</strong>。</p>
-        <p>需要特别说明的是：<strong>女性身上的 ASD 特质常常被社交伪装掩盖</strong>。从小被期待懂事、体贴、会看眼色，很多人会主动学会微笑、接话、模仿别人的反应，看起来社交无碍，但每一次互动都在消耗大量心力。长期伪装的结果，往往是成年后持续的疲惫、社交后需要长时间独处恢复，甚至搞不清哪个才是真正的我。</p>
+        <p>需要特别说明的是：<strong>ASD 特质常常被社交伪装所掩盖</strong>。很多人从小被期待懂事、体贴、会看眼色，于是主动学会微笑、接话、模仿别人的反应，看起来社交无碍，但每一次互动都在消耗大量心力。长期伪装的结果，往往是成年后持续的疲惫、社交后需要长时间独处恢复，甚至搞不清哪个才是真正的我。<span class="small">（这类伪装在女性身上尤其常见，因此女性的 ASD 往往更晚才被识别。）</span></p>
         <p>这类耗竭常被误认为抑郁或内向，也常和 ADHD 同时出现。</p>
-        <p>💡 建议：如果这些描述让你有共鸣，可以进一步了解成年女性的 ASD 表现，而不必急着给自己下结论。</p>`;
+        <p>💡 建议：如果这些描述让你有共鸣，可以进一步了解孤独谱系（ASD）的表现，而不必急着给自己下结论。</p>`;
       } else {
         h += `<p>你的得分 <strong>${r.score} 分</strong>，未达到 65 分的提示线，ASD 相关特质的整体表现不突出。</p>
         <p>当然，量表无法覆盖所有情况，如果你在社交场合长期感到在演，或对声音、光线格外敏感，仍值得单独关注。</p>`;
@@ -932,7 +931,7 @@ const MODULES = [
       tag: "模块一 · 核心筛查",
       body: `<p>这 28 道题覆盖社交兴趣、沟通方式、细节关注、注意力切换、想象力五个方面，用来初步了解<strong>孤独谱系（ASD）特质</strong>的分布。</p>
         <div class="guide-point"><span class="ic">📌</span><span>请按<strong>长期一贯</strong>的样子作答，而不是最近几周的状态。</span></div>
-        <div class="guide-point"><span class="ic">🕐</span><span>共 28 题，约 4 分钟。</span></div>`
+        <div class="guide-point"><span class="ic">💡</span><span>没有标准答案，请按真实感受作答，不必迎合社会期待。</span></div>`
     }
   },
 
@@ -975,9 +974,8 @@ const MODULES = [
       title: "BRIEF-A 执行功能核心摘录",
       tag: "模块二 · 深度功能",
       body: `<p>本摘录从 BRIEF-A 中提取三个最影响日常生活的维度：<strong>任务启动、工作记忆、情绪控制</strong>。</p>
-        <div class="guide-point warn"><span class="ic">💡</span><span>本模块是<strong>自评摘录版</strong>（非原版 75 题标准化量表），分数仅供参考、无临床切点。</span></div>
         <div class="guide-point"><span class="ic">📌</span><span>请按<strong>最近一个月</strong>的实际表现评分，而不是你希望自己做到的样子。</span></div>
-        <div class="guide-point"><span class="ic">🕐</span><span>共 15 题，约 3 分钟。</span></div>`
+        <div class="guide-point"><span class="ic">💡</span><span>遇到没经历过的情境，按「如果是你来做，难度大概如何」估计即可。</span></div>`
     }
   },
   {
@@ -1000,10 +998,12 @@ const MODULES = [
         <p>长期如此，常见的后果是：社交后极度疲惫、越来越回避场合、以及他们喜欢的是我演出来的那个人的疏离感。</p>
         <p>💡 建议（去伪装化）：不必一次卸下所有面具。先从<strong>最安全的一两个关系</strong>开始，练习少演一点，允许自己说我没听懂，允许自己提前离场，允许沉默。同时给社交后的自己留出固定的恢复时间。</p>`;
       } else if (r.score >= 10) {
-        h += `<p>你的得分 <strong>${r.score} / 30</strong>，存在一定的社交伪装，但还没有到高消耗的程度。</p>
-        <p>💡 建议：留意哪些场合最让你累，适当减少或提前准备，能省下不少力气。</p>`;
+        h += `<p>你的得分 <strong>${r.score} / 30</strong>，存在一定的社交伪装，但还没有到高消耗的程度。你可能只在某些场合（如陌生人多的聚会、需要表现的工作场景）才会明显进入表演状态，大多数时候还算放松。</p>
+        <p>这类轻微的伪装本身不是问题，很多人都会在特定场合调整自己。只是要留意：<strong>哪些场合让你最累、结束后最想独处</strong>，这些就是你伪装成本最高的地方。</p>
+        <p>💡 建议：对高消耗的场合适当减少次数、提前准备、或给自己留出事后恢复的时间，能省下不少力气。</p>`;
       } else {
-        h += `<p>你的得分 <strong>${r.score} / 30</strong>，社交中的伪装负担较低，你大概能以比较接近本来的样子与人相处。</p>`;
+        h += `<p>你的得分 <strong>${r.score} / 30</strong>，社交中的伪装负担较低，你大多时候能以接近本来的样子与人相处，不需要花太多心力去扮演别人。</p>
+        <p>这意味着你在社交中保留了更多真实的能量，是很好的状态。当然，这不代表你从不调整自己——只是这种调整没有成为你的主要消耗。</p>`;
       }
       return h;
     },
@@ -1011,9 +1011,8 @@ const MODULES = [
       title: "CAT-Q 社交伪装量表（摘录）",
       tag: "模块二 · 深度功能",
       body: `<p>CAT-Q 测量的是伪装这一行为：为了融入，你有多少时候在<strong>掩饰、补偿、同化</strong>。</p>
-        <div class="guide-point warn"><span class="ic">💡</span><span>本模块是<strong>自评摘录版</strong>（原版 25 题），分数仅供参考、无临床切点。</span></div>
         <div class="guide-point"><span class="ic">📌</span><span>请按你<strong>真实的社交习惯</strong>作答，不必评判好坏。</span></div>
-        <div class="guide-point"><span class="ic">🕐</span><span>共 10 题，约 2 分钟。</span></div>`
+        <div class="guide-point"><span class="ic">💡</span><span>掩饰、补偿、同化都不是缺点，如实作答就好。</span></div>`
     }
   },
   {
@@ -1039,7 +1038,8 @@ const MODULES = [
         h += `<p>你的得分 <strong>${r.score} 分</strong>，处于中等区间：你能感知情绪，但在<strong>精细区分和用语言表达</strong>上会有些吃力。</p>
         <p>💡 建议：试着把烦拆成更具体的词（委屈？被忽视？来不及？），命名的过程本身就会降低强度。</p>`;
       } else {
-        h += `<p>你的得分 <strong>${r.score} 分</strong>，述情能力良好，你通常能察觉、分辨并说出自己的感受。</p>`;
+        h += `<p>你的得分 <strong>${r.score} 分</strong>，述情能力良好，你通常能察觉、分辨并说出自己的感受——这本身就是一项很实用的能力，尤其在需要向医生或他人描述自己状态时。</p>
+        <p>情绪对你说得清楚，意味着它更多是信息而不是迷雾。保持即可，也可以在压力大时继续用简单的方式关照自己，比如偶尔问自己一句「我现在具体是什么感受」。</p>`;
       }
       return h;
     },
@@ -1048,7 +1048,7 @@ const MODULES = [
       tag: "模块二 · 深度功能",
       body: `<p>述情障碍描述的是<strong>识别与表达情绪的困难</strong>，它不是疾病，而是一种特质维度。</p>
         <div class="guide-point"><span class="ic">📌</span><span>请按你<strong>一贯的样子</strong>作答。不确定时，选中间值也可以。</span></div>
-        <div class="guide-point"><span class="ic">🕐</span><span>共 20 题，约 3 分钟。</span></div>`
+        <div class="guide-point"><span class="ic">💡</span><span>情绪没有对错，请按真实情况作答，不必评判自己的感受。</span></div>`
     }
   },
 
@@ -1074,7 +1074,8 @@ const MODULES = [
         h += `<p>目前的情绪状态已经达到需要重视的程度。抑郁会直接带来注意力下降、动力不足、拖延加重，这些表现<strong>和 ADHD 高度重叠</strong>，所以在这一阶段很难分辨哪些是情绪造成的。</p>
         <p>💡 建议：优先处理情绪。规律作息、减少负荷、必要时寻求专业帮助，等情绪稳定后再回看注意力问题，判断会更准确。</p>`;
       } else {
-        h += `<p>目前情绪状态整体平稳，抑郁症状不突出。</p>`;
+        h += `<p>目前情绪状态整体平稳，抑郁症状不突出。过去两周里，你的动力、兴趣和睡眠大多能维持正常节奏，这为处理其他问题（比如注意力或睡眠）留出了更好的空间。</p>
+        <p>💡 建议：偶尔有几天情绪低落属正常波动；但若这种低落连续出现、或开始影响你起床、工作、与人相处，即使分数不高也值得再次关注。</p>`;
       }
       if (r.detail.selfHarm > 0) {
         h += `<p>⚠️ 你提到过不如死掉或伤害自己的念头。<strong>请优先照顾自己的安全</strong>：联系身边信任的人，或拨打当地心理援助热线（如 12356 心理援助热线）。你不需要一个人扛。</p>`;
@@ -1109,7 +1110,8 @@ const MODULES = [
         h += `<p>焦虑水平偏高。长期焦虑会占用工作记忆，你会发现自己记不住、坐不住、脑子转个不停，看起来非常像 ADHD。</p>
         <p>💡 建议：先把焦虑当作主线处理（呼吸训练、减少咖啡因、规律运动、必要时专业帮助），再评估注意力。</p>`;
       } else {
-        h += `<p>焦虑水平整体在正常范围内。</p>`;
+        h += `<p>焦虑水平整体在正常范围内。过去两周里，你的紧张和担忧没有明显占用你的精力，这对注意力和睡眠都是好消息。</p>
+        <p>💡 建议：偶尔的紧张是正常的。如果发现自己在特定情境（如截止期限、社交、健康担忧）里会明显紧绷，可以留意那种紧张是否来得快、去得也快；若持续超过两周且难以自控，再考虑进一步评估。</p>`;
       }
       return h;
     },
@@ -1141,13 +1143,29 @@ const MODULES = [
     },
     interpret(r) {
       const d = r.detail;
+      const dims = [
+        { name: "情绪失调", v: d.emo, desc: "情绪来得快、强度大，难以平复，或对自己的情绪感到害怕与失控" },
+        { name: "负面自我认知", v: d.self, desc: "长期觉得自己不够好、有羞耻感、习惯性自责，或觉得自己不值得被好好对待" },
+        { name: "关系与警觉", v: d.rel, desc: "与人相处时容易高度警觉、难以信任，常担心被拒绝、被抛弃或受到威胁" }
+      ];
+      const top = dims.slice().sort((a, b) => b.v - a.v)[0];
       let h = `<p>得分 <strong>${r.score} / 40</strong>。三个方向的分布：情绪失调 ${d.emo}/12、负面自我认知 ${d.self}/12、关系与警觉 ${d.rel}/16。</p>`;
-      if (r.score >= 20) {
-        h += `<p>你在情绪调节和自我认知上承受着不小的压力。这类反应往往来自<strong>长期处于不安全环境</strong>后形成的自我保护：高度警觉、容易羞耻、难以信任。</p>
-        <p>这些反应会显著消耗注意力资源，也常被误认为情绪化或性格问题。</p>
+      if (r.score >= 30) {
+        h += `<p>你在情绪调节、自我认知和关系层面都承受着相当大的压力，这些反应已经比较明显。它们往往来自<strong>长期处于不安全环境</strong>后形成的自我保护：高度警觉、容易羞耻、难以信任。</p>
+        <p>这些反应会显著消耗注意力资源，也常被误认为情绪化或性格问题。其中最突出的是<strong>${top.name}</strong>——${top.desc}。</p>
         <p>💡 建议：创伤相关的议题，效果最好的往往不是自助技巧，而是<strong>与受过创伤培训的专业人士一起工作</strong>。如果条件允许，这是值得优先投入的方向。</p>`;
+      } else if (r.score >= 20) {
+        h += `<p>你在情绪调节和自我认知上承受着一定的压力，已经能感到这些反应对日常的拖累。其中最突出的是<strong>${top.name}</strong>：${top.desc}。</p>
+        <p>这类反应常被误认为情绪化或性格问题，其实更像一套在长期不安全环境中形成的<strong>自我保护机制</strong>——它们曾经保护过你，只是现在代价越来越高。</p>
+        <p>💡 建议：可以先从稳定作息、减少过度刺激入手，同时留意什么情境最容易触发你的警觉或羞耻。若这些反应持续影响生活，值得考虑与受过创伤培训的专业人士一起梳理。</p>`;
+      } else if (r.score >= 10) {
+        h += `<p>你目前<strong>存在一部分创伤相关的反应</strong>，程度不算高，但也不是完全无感——有些情境仍会勾起你的警觉、羞耻或情绪起伏。其中相对突出的是<strong>${top.name}</strong>：${top.desc}。</p>
+        <p>这类反应往往在<strong>压力大、睡眠不足或遇到类似旧情境</strong>时被放大，平时则可能不显。它不一定要立刻处理，但值得你对自己多一分留意：什么时候会突然紧绷、突然自责、突然想逃离，这些瞬间背后往往藏着过去的经验。</p>
+        <p>💡 建议：目前以<strong>自我照顾</strong>为主——稳定作息、保证睡眠、减少不必要的消耗，并试着在平静时把这些反应记录下来。如果它们开始频繁影响你的情绪或关系，再考虑寻求专业帮助。</p>`;
       } else {
-        h += `<p>目前创伤相关反应的整体水平不高。</p>`;
+        h += `<p>目前创伤相关反应的整体水平<strong>较低</strong>，三个方向都比较平稳：你能较好地调节情绪、自我评价相对稳定、在关系里也不容易过度警觉。这是很好的基础。</p>
+        <p>不过，如果你在<strong>某些特定情境</strong>（比如被批评、冲突、被忽视）里仍会突然反应过激、难以自控，即使日常分数不高，也值得留意这些瞬间是否与过去的经历有关——分数低不等于完全没有相关体验，只是它目前没有成为生活的主要负担。</p>
+        <p>💡 建议：保持现状，同时照顾好睡眠和压力水平即可。</p>`;
       }
       return h;
     },
@@ -1155,9 +1173,8 @@ const MODULES = [
       title: "CPTSD 核心症状筛查",
       tag: "模块三 · 共病状态",
       body: `<p>这份核心版聚焦复杂性创伤后应激的三个关键面向：<strong>情绪失调、负面自我认知、关系与警觉</strong>。</p>
-        <div class="guide-point warn"><span class="ic">💡</span><span>本模块为<strong>自评参考版</strong>，非标准化临床量表，分数仅供自我了解。</span></div>
         <div class="guide-point warn"><span class="ic">💡</span><span>本量表可能触及不愉快的记忆。你可以随时停下，不必勉强完成。</span></div>
-        <div class="guide-point"><span class="ic">🕐</span><span>共 10 题，约 2 分钟。</span></div>`
+        <div class="guide-point"><span class="ic">💡</span><span>请按最近一段时间的一般状态作答，而不是最难受的那一天。</span></div>`
     }
   },
   {
@@ -1180,7 +1197,8 @@ const MODULES = [
         h += `<p>结果提示存在一定的<strong>双相谱系风险</strong>。这不是诊断，但很重要，因为双相和 ADHD 的部分表现（话多、精力旺、冲动）高度相似，而处理方式完全不同。若被当作单纯 ADHD 处理，可能会带来风险。</p>
         <p>💡 建议：如果确实有周期性的高涨期与低谷期，就诊时<strong>主动告诉医生</strong>，并尽量记录情绪波动的周期。是否属于双相，必须由专业医生判断，请不要自行下结论。</p>`;
       } else {
-        h += `<p>目前未达到双相风险的常用提示阈值。</p>`;
+        h += `<p>目前未达到双相风险的常用提示阈值，说明你没有出现一段明确、成片的高涨期——那种精力过剩、话多、睡眠减少却仍不累、情绪异常高涨的状态。</p>
+        <p>这通常意味着你的情绪起伏更多是日常范围内的波动，而不是周期性的高涨-低谷模式。若之后出现明显的高涨期，尤其持续数天且影响生活，可以再来回顾这份结果。</p>`;
       }
       return h;
     },
@@ -1211,9 +1229,12 @@ const MODULES = [
         <p>只是当这种模式持续下去，代价会越来越高：关系剧烈起伏、自我评价崩塌、反复的空虚感。</p>
         <p>💡 建议：这类困扰对<strong>专门针对情绪调节的疗法</strong>（如 DBT 辩证行为疗法）反应较好。寻求帮助不是给自己贴标签，而是学一套更省力的活法。请优先寻找受过相关训练的专业人士。</p>`;
       } else if (r.score >= 4) {
-        h += `<p>你有一些相关体验，但未到高风险区间。情绪波动本身是可以被理解和改善的。</p>`;
+        h += `<p>你有一些相关体验，但未到高风险区间：可能在强烈情绪下偶尔会冲动、会害怕被抛弃、会有比较明显的情绪起伏，但这些还没有成为你生活中的固定模式。</p>
+        <p>情绪波动本身是可以被理解和改善的。留意这些体验通常在<strong>什么情况下被触发</strong>（比如关系紧张、被否定、独处时的空虚感），是很好的起点。</p>
+        <p>💡 建议：目前不需要急着给自己定性。可以先练习在情绪上来时缓一缓——深呼吸、离开现场、把感受写下来，往往能拉开一点距离。</p>`;
       } else {
-        h += `<p>相关体验较少，情绪调节整体比较稳定。</p>`;
+        h += `<p>相关体验较少，情绪调节整体比较稳定：你在关系里不容易有剧烈起伏，自我评价也相对稳当，被情绪冲垮的时候不多。</p>
+        <p>这说明你目前有一套比较省力的情绪应对方式。保持即可，也可以把这份稳定当作处理其他问题（如注意力、睡眠）时的底气。</p>`;
       }
       return h;
     },
@@ -1222,7 +1243,7 @@ const MODULES = [
       tag: "模块三 · 共病状态",
       body: `<p>这份清单关注的是<strong>强烈情绪下的应对方式</strong>：关系波动、自我评价起伏、冲动、空虚感。</p>
         <div class="guide-point"><span class="ic">🫂</span><span>请放心作答：这些体验描述的是应对痛苦的方式，<strong>不是人格缺陷</strong>，也不带任何评判。</span></div>
-        <div class="guide-point"><span class="ic">🕐</span><span>共 10 题，约 2 分钟。</span></div>`
+        <div class="guide-point"><span class="ic">💡</span><span>按你长期、反复出现的体验作答，而非偶然一次。</span></div>`
     }
   },
 
@@ -1259,7 +1280,9 @@ const MODULES = [
         h += `<p>${map[d.worst]}</p>`;
         h += `<p>💡 建议：在所有干预里，<strong>睡眠的性价比最高</strong>。先固定起床时间、减少睡前屏幕、把床只留给睡觉，坚持两周通常就能看到变化。</p>`;
       } else {
-        h += `<p>整体睡眠状况尚可，暂未表现出明显的睡眠障碍信号。</p>`;
+        h += `<p>整体睡眠状况尚可，暂未表现出明显的睡眠障碍信号：你的入睡、睡眠效率和白天状态大多能维持在一个还不错的水平。</p>
+        <p>不过睡眠是波动最大的指标之一，压力大或作息被打乱时很容易下滑。可以留意自己<strong>周末和假期</strong>的睡眠是否有明显变化，以及白天是否长期靠咖啡或强撑来维持清醒。</p>
+        <p>💡 建议：保持规律即可，尤其是固定起床时间——它是维持睡眠节律最省力的一招。</p>`;
       }
       return h;
     },
@@ -1267,9 +1290,8 @@ const MODULES = [
       title: "PSQI 睡眠质量核心版",
       tag: "模块四 · 生理状态",
       body: `<p>本版聚焦三个最影响日常的睡眠面向：<strong>入睡困难、睡眠效率、日间功能障碍</strong>。</p>
-        <div class="guide-point warn"><span class="ic">💡</span><span>本模块为<strong>自评摘录版</strong>（非原版 19 题 PSQI），分数仅供参考、无临床切点。</span></div>
         <div class="guide-point"><span class="ic">📌</span><span>请按<strong>最近一个月</strong>的典型情况作答。</span></div>
-        <div class="guide-point"><span class="ic">🕐</span><span>共 9 题，约 2 分钟。</span></div>`
+        <div class="guide-point"><span class="ic">💡</span><span>若记不清细节，按大致印象估算即可。</span></div>`
     }
   },
   {
@@ -1303,7 +1325,7 @@ const MODULES = [
       tag: "模块四 · 生理状态",
       body: `<p>本测试是 <strong>rMEQ（晨型-夜型问卷精简版，Adan 与 Almirall 1991）</strong>，用于测量你的睡眠时相是偏晨型还是夜型。</p>
         <div class="guide-point"><span class="ic">📌</span><span>请按你<strong>一贯的习惯</strong>作答，而不是最近几天被外界打乱的状态。</span></div>
-        <div class="guide-point"><span class="ic">🕐</span><span>共 5 题，约 2 分钟。</span></div>`
+        <div class="guide-point"><span class="ic">💡</span><span>没有标准答案，按你真实的作息倾向选择即可。</span></div>`
     }
   }
 ];
@@ -1349,6 +1371,15 @@ function firstUnanswered(mod) {
   return a.length - 1;
 }
 function answeredCount(mod) { return answersOf(mod).filter(v => v != null).length; }
+/* 下一个未完成的测试（按 MODULES 顺序向后循环查找） */
+function nextUncompletedModule(from) {
+  const idx = MODULES.indexOf(from || curMod);
+  for (let i = 1; i <= MODULES.length; i++) {
+    const m = MODULES[(idx + i) % MODULES.length];
+    if (!state.results[m.id]) return m;
+  }
+  return null;
+}
 
 /* ---------- 各 Tab（模块）的完成度与汇总报告状态 ---------- */
 function tabModules(tabId) { return MODULES.filter(m => m.tab === tabId); }
@@ -1434,6 +1465,23 @@ function renderTabs() {
 function switchTab(id) {
   activeTab = id; state.tab = id; saveState();
   renderTabs(); renderEntries();
+  scrollTabsAfterSwitch();
+}
+
+/* 切换 Tab 后：让最右侧的「生理状态」露出来，提示后面还有模块 */
+function scrollTabsAfterSwitch() {
+  const bar = document.getElementById("tabs");
+  const active = bar.querySelector(".tab.active");
+  if (!active) return;
+  if (active === bar.firstElementChild) {
+    bar.scrollTo({ left: 0, behavior: "smooth" });
+    return;
+  }
+  const last = bar.lastElementChild;
+  const barRect = bar.getBoundingClientRect();
+  const lastRect = last.getBoundingClientRect();
+  const contentLeft = lastRect.left - barRect.left + bar.scrollLeft;
+  bar.scrollTo({ left: Math.max(0, contentLeft + lastRect.width - bar.clientWidth), behavior: "smooth" });
 }
 
 function renderEntries() {
@@ -1569,6 +1617,16 @@ function openGuide(idx) {
   const partial = !state.results[curMod.id] && answeredCount(curMod) > 0;
   btn.textContent = partial ? `继续答题（第 ${firstUnanswered(curMod) + 1} 题）` : "开始测试";
   btn.onclick = () => startQuiz(partial);
+
+  /* 单个测试「重新测试」：仅在本测试已有进度或结果时显示，清空后从头开始 */
+  const retest = document.getElementById("g-retest");
+  const hasState = answeredCount(curMod) > 0 || !!state.results[curMod.id];
+  retest.style.display = hasState ? "block" : "none";
+  retest.onclick = () => {
+    if (!confirm("确定要清空本测试的答案与结果，重新开始吗？")) return;
+    startQuiz(false);
+  };
+
   switchScreen("s-guide");
 }
 
@@ -1684,6 +1742,17 @@ function renderResult(mod, r) {
     saveState();
     curMod = mod; startQuiz(false);
   };
+
+  /* “下一个测试”按钮：指向下一个未完成的量表；全部完成则隐藏 */
+  const next = nextUncompletedModule(mod);
+  const nextBtn = document.getElementById("r-next");
+  if (next) {
+    nextBtn.style.display = "block";
+    nextBtn.textContent = `下一个测试：${next.icon} ${next.name} →`;
+    nextBtn.onclick = () => openGuide(MODULES.indexOf(next));
+  } else {
+    nextBtn.style.display = "none";
+  }
 }
 
 function viewResult(id) {
@@ -2247,27 +2316,160 @@ function pdfSummary(results) {
   return `<p class="pr-summary-title">综合小结</p>` + notes.map(n => `<p>· ${n}</p>`).join("");
 }
 
-function downloadPDF() {
+function isWeChat() {
+  return /MicroMessenger/i.test(navigator.userAgent);
+}
+
+/* 在 canvas 上绘制报告，返回 canvas（供生成 PNG 图片或 PDF 文件复用） */
+function renderReportCanvas() {
   const results = state.results;
   const done = MODULES.filter(m => results[m.id]);
-  const rows = done.map(m => {
-    const r = results[m.id];
-    return `<tr><td>${m.icon} ${m.name}</td><td>${escapeHtml(shortSummary(m, r))}</td></tr>`;
-  }).join("");
-  document.getElementById("print-report").innerHTML = `
-    <h1>ADHD 与神经多样性自测报告</h1>
-    <p class="pr-meta">生成时间：${new Date().toLocaleString("zh-CN")} · 已完成 ${done.length}/${MODULES.length} 项</p>
-    ${done.length ? `<table><tr><th>测试项目</th><th>结果</th></tr>${rows}</table>` : `<p>尚未完成任何测试。</p>`}
-    ${done.length ? pdfSummary(results) : ""}
-    <p class="pr-foot">本报告仅作自我了解与初筛参考，不能替代专业医生的临床诊断。</p>`;
+  const W = 760, margin = 48;
+  const canvas = document.createElement("canvas");
+  canvas.width = W;
+  const ctx = canvas.getContext("2d");
+  const font = (size, bold) => `${bold ? "bold " : ""}${size}px -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif`;
 
-  // 手机端：等浏览器完成渲染/排版后再调打印，避免 iOS Safari 打印出空白或旧内容
-  const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
-  if (isMobile) {
-    setTimeout(() => window.print(), 150);
+  const maxW = W - margin * 2;
+  const wrap = (text, f) => {
+    ctx.font = f;
+    const lines = [];
+    let line = "";
+    for (const ch of Array.from(text)) {
+      if (ctx.measureText(line + ch).width > maxW && line) { lines.push(line); line = ch; }
+      else line += ch;
+    }
+    if (line) lines.push(line);
+    return lines;
+  };
+
+  const paras = [];
+  paras.push({ text: "ADHD 与神经多样性自测报告", f: font(34, true), c: "#1f2430", gap: 16 });
+  paras.push({ text: `生成时间：${new Date().toLocaleString("zh-CN")} · 已完成 ${done.length}/${MODULES.length} 项`, f: font(22), c: "#5c6470", gap: 26 });
+  if (done.length) {
+    done.forEach(m => {
+      paras.push({ text: `${m.icon} ${m.name}`, f: font(26, true), c: "#1f2430", gap: 4 });
+      paras.push({ text: shortSummary(m, results[m.id]), f: font(26), c: "#5c6470", gap: 16 });
+    });
   } else {
-    window.print();
+    paras.push({ text: "尚未完成任何测试。", f: font(26), c: "#5c6470", gap: 16 });
   }
+  const summary = pdfSummary(results).replace(/<\/p>/gi, "\n").replace(/<[^>]*>/g, "");
+  summary.split("\n").map(s => s.trim()).filter(Boolean).forEach((s, i) => {
+    paras.push({ text: s, f: font(26), c: i === 0 ? "#1f2430" : "#5c6470", gap: 8 });
+  });
+  paras.push({ text: "本报告仅作自我了解与初筛参考，不能替代专业医生的临床诊断。", f: font(20), c: "#9aa1ac", gap: 0 });
+
+  const rendered = paras.map(p => ({ ...p, lines: wrap(p.text, p.f) }));
+  const lineH = 46, topPad = 56, bottomPad = 40;
+  let h = topPad;
+  rendered.forEach(p => { h += p.lines.length * lineH + p.gap; });
+  h += bottomPad;
+  canvas.height = Math.ceil(h);
+
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, W, canvas.height);
+  let y = topPad;
+  rendered.forEach(p => {
+    ctx.font = p.f;
+    ctx.fillStyle = p.c;
+    p.lines.forEach(line => { ctx.fillText(line, margin, y); y += lineH; });
+    y += p.gap;
+  });
+  return canvas;
+}
+
+function downloadReportImage() {
+  return renderReportCanvas().toDataURL("image/png");
+}
+
+function showReportImage() {
+  const dataUrl = downloadReportImage();
+  document.querySelectorAll(".img-save-mask").forEach(e => e.remove());
+  const mask = document.createElement("div");
+  mask.className = "img-save-mask";
+  mask.innerHTML = `
+    <div class="img-save-card">
+      <img src="${dataUrl}" alt="测试报告">
+      <p class="img-save-hint">长按上方图片，选择「保存图片」即可保存报告。<br>如需 PDF 文件，请点右上角「···」→「在浏览器打开」后再下载。</p>
+      <button class="img-save-close" onclick="this.closest('.img-save-mask').remove()">关闭</button>
+    </div>`;
+  mask.addEventListener("click", e => { if (e.target === mask) mask.remove(); });
+  document.body.appendChild(mask);
+}
+
+/* 用 canvas 渲染出的 JPEG 生成最小合法 PDF（单页、图片内嵌） */
+function buildPdfFromJpeg(jpegBytes, imgW, imgH, pageW, pageH) {
+  const chunks = [];
+  const total = () => chunks.reduce((s, c) => s + c.length, 0);
+  const push = (d) => chunks.push(typeof d === "string" ? new TextEncoder().encode(d) : d);
+
+  const content = `q ${pageW} 0 0 ${pageH} 0 0 cm /Im0 Do Q`;
+  const objBody = [
+    null,
+    "<< /Type /Catalog /Pages 2 0 R >>",
+    "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+    `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pageW} ${pageH}] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>`,
+    null,
+    `<< /Length ${content.length} >>\nstream\n${content}\nendstream`
+  ];
+
+  push("%PDF-1.4\n");
+  const offsets = [0, 0, 0, 0, 0, 0];
+  for (let i = 1; i <= 5; i++) {
+    offsets[i] = total();
+    push(`${i} 0 obj\n`);
+    if (i === 4) {
+      push(`<< /Type /XObject /Subtype /Image /Width ${imgW} /Height ${imgH} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpegBytes.length} >>\nstream\n`);
+      push(jpegBytes);
+      push("\nendstream");
+    } else {
+      push(objBody[i]);
+    }
+    push("\nendobj\n");
+  }
+
+  const xrefOffset = total();
+  push("xref\n0 6\n0000000000 65535 f \n");
+  for (let i = 1; i <= 5; i++) push(String(offsets[i]).padStart(10, "0") + " 00000 n \n");
+  push(`trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`);
+
+  const out = new Uint8Array(total());
+  let pos = 0;
+  chunks.forEach(c => { out.set(c, pos); pos += c.length; });
+  return out;
+}
+
+/* 直接下载 PDF 文件到本地（替代 window.print 的打印对话框） */
+function downloadPdfFile() {
+  const canvas = renderReportCanvas();
+  const jpegDataUrl = canvas.toDataURL("image/jpeg", 0.95);
+  const bin = atob(jpegDataUrl.split(",")[1]);
+  const jpegBytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) jpegBytes[i] = bin.charCodeAt(i);
+
+  const imgW = canvas.width, imgH = canvas.height;
+  const pageW = 595;                       // A4 宽度，保持比例
+  const pageH = Math.max(1, Math.ceil(pageW * imgH / imgW));
+  const pdf = buildPdfFromJpeg(jpegBytes, imgW, imgH, pageW, pageH);
+
+  const blob = new Blob([pdf], { type: "application/pdf" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "ADHD自测报告.pdf";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1500);
+}
+
+function downloadPDF() {
+  // 微信内置浏览器不支持下载，改为生成图片长按保存
+  if (isWeChat()) { showReportImage(); return; }
+
+  // 其他浏览器：直接生成 PDF 文件下载（不再弹打印对话框）
+  downloadPdfFile();
 }
 
 /* ===== 重新测试：清除所有结果 ===== */
