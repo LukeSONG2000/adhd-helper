@@ -320,6 +320,7 @@
 .img-save-card img { width: 100%; border-radius: 8px; display: block; }
 .img-save-hint { font-size: 13px; color: #5c6470; margin: 12px 0 6px; line-height: 1.7; }
 .img-save-close { margin-top: 10px; width: 100%; padding: 13px; background: var(--p); color: #fff; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; font-family: inherit; cursor: pointer; }
+.img-save-open { display: block; width: 100%; margin-top: 14px; padding: 13px; background: var(--p); color: #fff; border-radius: 12px; font-size: 16px; font-weight: 600; font-family: inherit; cursor: pointer; text-align: center; text-decoration: none; }
 </style>
 </head>
 <body>
@@ -339,7 +340,7 @@
   <div class="screen active" id="s-home">
     <div class="home-head">
       <h1>ADHD 与神经多样性自测矩阵</h1>
-      <p>14 个独立量表 · 4 个维度 · 逐题自动存档</p>
+      <p>14 个独立量表 · 四大模块 · 逐题自动存档</p>
     </div>
     <div class="home-progress" id="home-progress"></div>
     <div class="tabs" id="tabs"></div>
@@ -1371,14 +1372,15 @@ function firstUnanswered(mod) {
   return a.length - 1;
 }
 function answeredCount(mod) { return answersOf(mod).filter(v => v != null).length; }
-/* 下一个未完成的测试（按 MODULES 顺序向后循环查找） */
-function nextUncompletedModule(from) {
-  const idx = MODULES.indexOf(from || curMod);
-  for (let i = 1; i <= MODULES.length; i++) {
-    const m = MODULES[(idx + i) % MODULES.length];
-    if (!state.results[m.id]) return m;
-  }
-  return null;
+/* 当前模块（Tab）内，紧跟在 mod 之后的那个测试；已是最后一个则返回 null */
+function nextInModule(mod) {
+  const list = tabModules(mod.tab);
+  const idx = list.findIndex(m => m.id === mod.id);
+  return (idx >= 0 && idx < list.length - 1) ? list[idx + 1] : null;
+}
+function isLastInModule(mod) {
+  const list = tabModules(mod.tab);
+  return list.length > 0 && list[list.length - 1].id === mod.id;
 }
 
 /* ---------- 各 Tab（模块）的完成度与汇总报告状态 ---------- */
@@ -1468,20 +1470,15 @@ function switchTab(id) {
   scrollTabsAfterSwitch();
 }
 
-/* 切换 Tab 后：让最右侧的「生理状态」露出来，提示后面还有模块 */
+/* 切换 Tab 后：让点击的 Tab 对齐到左边缘，左右两个方向都能正确回显（超出最右端时浏览器自动收敛） */
 function scrollTabsAfterSwitch() {
   const bar = document.getElementById("tabs");
   const active = bar.querySelector(".tab.active");
   if (!active) return;
-  if (active === bar.firstElementChild) {
-    bar.scrollTo({ left: 0, behavior: "smooth" });
-    return;
-  }
-  const last = bar.lastElementChild;
   const barRect = bar.getBoundingClientRect();
-  const lastRect = last.getBoundingClientRect();
-  const contentLeft = lastRect.left - barRect.left + bar.scrollLeft;
-  bar.scrollTo({ left: Math.max(0, contentLeft + lastRect.width - bar.clientWidth), behavior: "smooth" });
+  const activeRect = active.getBoundingClientRect();
+  const contentLeft = activeRect.left - barRect.left + bar.scrollLeft;
+  bar.scrollTo({ left: Math.max(0, contentLeft), behavior: "smooth" });
 }
 
 function renderEntries() {
@@ -1721,7 +1718,12 @@ function renderResult(mod, r) {
 
   /* 本 Tab 是否已全部完成 → 提示可查看模块汇总报告 */
   const note = document.getElementById("r-tabnote");
-  if (tabUnlocked(mod.tab)) {
+  const lastInModule = isLastInModule(mod);
+  if (lastInModule && tabUnlocked(mod.tab)) {
+    // 主按钮已是「查看本模块汇总报告」，这里只做一行完成提示，避免重复
+    const t = TABS.find(x => x.id === mod.tab);
+    note.innerHTML = `<div class="entry-note" style="text-align:center;margin-top:12px;">✅ ${t.name} ${tabModules(mod.tab).length} 项已全部完成</div>`;
+  } else if (tabUnlocked(mod.tab)) {
     const t = TABS.find(x => x.id === mod.tab);
     note.innerHTML = `<button class="tab-unlock-note" onclick="openTabReport('${mod.tab}')">
       <span class="ic">🗂️</span>
@@ -1743,15 +1745,21 @@ function renderResult(mod, r) {
     curMod = mod; startQuiz(false);
   };
 
-  /* “下一个测试”按钮：指向下一个未完成的量表；全部完成则隐藏 */
-  const next = nextUncompletedModule(mod);
+  /* 结果页主按钮：非本模块最后一个 →「下一个测试」；本模块最后一个 →「查看本模块汇总报告」 */
   const nextBtn = document.getElementById("r-next");
-  if (next) {
+  if (lastInModule) {
+    if (tabUnlocked(mod.tab)) {
+      nextBtn.style.display = "block";
+      nextBtn.textContent = "查看本模块汇总报告 →";
+      nextBtn.onclick = () => openTabReport(mod.tab);
+    } else {
+      nextBtn.style.display = "none";
+    }
+  } else {
+    const next = nextInModule(mod);
     nextBtn.style.display = "block";
     nextBtn.textContent = `下一个测试：${next.icon} ${next.name} →`;
     nextBtn.onclick = () => openGuide(MODULES.indexOf(next));
-  } else {
-    nextBtn.style.display = "none";
   }
 }
 
@@ -2455,13 +2463,40 @@ function downloadPdfFile() {
 
   const blob = new Blob([pdf], { type: "application/pdf" });
   const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "ADHD自测报告.pdf";
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(url), 1500);
+
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+
+  if (isIOS) {
+    // iOS Safari 对 <a download> 支持不稳，提供「打开 PDF」与「长按存图」两条保存路径
+    showIosPdfSave(url, canvas.toDataURL("image/png"));
+  } else {
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "ADHD自测报告.pdf";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+  }
+}
+
+/* iOS Safari：提供「打开 PDF（分享→存储到文件）」与「长按图片保存到相册」两条路径 */
+function showIosPdfSave(pdfUrl, pngDataUrl) {
+  document.querySelectorAll(".img-save-mask").forEach(e => e.remove());
+  const mask = document.createElement("div");
+  mask.className = "img-save-mask";
+  mask.innerHTML = `
+    <div class="img-save-card">
+      <p class="img-save-hint" style="font-weight:700;font-size:15px;color:var(--t);margin-top:0;">📄 下载 PDF 报告</p>
+      <a class="img-save-open" href="${pdfUrl}" target="_blank" rel="noopener">打开 PDF（点右上角分享 → 存储到“文件”）</a>
+      <p class="img-save-hint">也可以长按下方图片，选择「保存到照片」：</p>
+      <img src="${pngDataUrl}" alt="测试报告">
+      <button class="img-save-close" onclick="this.closest('.img-save-mask').remove()">关闭</button>
+    </div>`;
+  mask.addEventListener("click", e => { if (e.target === mask) mask.remove(); });
+  document.body.appendChild(mask);
+  setTimeout(() => URL.revokeObjectURL(pdfUrl), 60000);
 }
 
 function downloadPDF() {
