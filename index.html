@@ -344,7 +344,7 @@
     <div class="tabs" id="tabs"></div>
     <div class="entry-list" id="entry-list"></div>
     <div id="comp-slot"></div>
-    <button class="btn btn-outline" onclick="showReportImage()" style="margin-top:12px;">🖼️ 保存图片</button>
+    <button class="btn btn-outline" onclick="showReportImage()" style="margin-top:12px;">结果保存为图片</button>
     <p class="foot-note">所有量表仅作自我了解与初筛参考，不能替代专业诊断。</p>
     <button class="btn btn-ghost" onclick="resetTest()" style="margin-top:8px;">重新测试</button>
   </div>
@@ -418,12 +418,12 @@
       <div class="ic">⚠️</div>
       <div>本报告基于你在本模块的作答自动生成，仅作自我了解与初筛参考，不能替代专业医生的临床诊断。</div>
     </div>
-    <a class="btn-link" id="tr-shop" href="#" target="_blank" rel="noopener">了解《ADHD人生设计指南》自救手册📚</a>
     <div class="btn-row">
-      <button class="btn btn-primary" onclick="showHome()">返回首页</button>
-      <button class="btn btn-outline" id="tr-next">查看其他模块报告 →</button>
-      <button class="btn btn-ghost" id="tr-comp">查看终极综合报告</button>
+      <button class="btn btn-primary" id="tr-next-module" style="display:none;">下一个模块测试</button>
+      <button class="btn btn-outline" onclick="showHome()">返回首页</button>
+      <a class="btn-link" id="tr-shop" href="#" target="_blank" rel="noopener">了解《ADHD人生设计指南》自救手册📚</a>
     </div>
+    <button class="btn btn-ghost" id="tr-comp" style="display:none;">查看终极综合报告</button>
   </div>
 
   <!-- ================= 综合报告 ================= -->
@@ -1468,17 +1468,14 @@ function switchTab(id) {
   scrollTabsAfterSwitch();
 }
 
-/* 切换 Tab 后：左右对称地露出对侧边缘——点左半的中间项露出「生理状态」，点右半的中间项露出「核心筛查」 */
+/* 切换 Tab 后：稍微右移，让最左按钮露出右半、最右按钮露出左半，提示前后都还有模块 */
 function scrollTabsAfterSwitch() {
   const bar = document.getElementById("tabs");
-  const active = bar.querySelector(".tab.active");
-  if (!active) return;
-  const tabs = Array.from(bar.children);
-  const idx = tabs.indexOf(active);
-  const n = tabs.length;
-  // 滚到最右：最后一个，或左半的中间项；否则滚到最左
-  const scrollRight = idx === n - 1 || (idx > 0 && idx < n / 2);
-  bar.scrollTo({ left: scrollRight ? bar.scrollWidth - bar.clientWidth : 0, behavior: "smooth" });
+  const first = bar.firstElementChild;
+  if (!first) return;
+  const maxLeft = bar.scrollWidth - bar.clientWidth;
+  const left = Math.min(first.offsetWidth / 2, maxLeft);
+  bar.scrollTo({ left: Math.max(0, left), behavior: "smooth" });
 }
 
 function renderEntries() {
@@ -2100,17 +2097,15 @@ function openTabReport(tabId) {
   e.viewedAt = Date.now();
   saveState();
 
-  /* 其他已解锁模块的快捷跳转（按 Tab 顺序循环取下一个） */
-  const i = TABS.findIndex(x => x.id === tabId);
-  const order = TABS.slice(i + 1).concat(TABS.slice(0, i));
-  const nextTab = order.find(x => tabUnlocked(x.id));
-  const nextBtn = document.getElementById("tr-next");
-  if (nextTab) {
-    nextBtn.style.display = "block";
-    nextBtn.textContent = `查看${nextTab.name}汇总报告 →`;
-    nextBtn.onclick = () => openTabReport(nextTab.id);
+  /* 「下一个模块测试」按钮：跳到下一个模块去测试（生理状态是最后一个，不显示） */
+  const mi = TABS.findIndex(x => x.id === tabId);
+  const nextModuleTab = TABS[mi + 1];
+  const nextModuleBtn = document.getElementById("tr-next-module");
+  if (nextModuleTab) {
+    nextModuleBtn.style.display = "block";
+    nextModuleBtn.onclick = () => { switchTab(nextModuleTab.id); showHome(); };
   } else {
-    nextBtn.style.display = "none";
+    nextModuleBtn.style.display = "none";
   }
 
   const allDone = MODULES.every(m => state.results[m.id]);
