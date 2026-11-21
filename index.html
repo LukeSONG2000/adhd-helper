@@ -1468,14 +1468,31 @@ function switchTab(id) {
   scrollTabsAfterSwitch();
 }
 
-/* 切换 Tab 后：稍微右移，让最左按钮露出右半、最右按钮露出左半，提示前后都还有模块 */
+/* 切换 Tab 后：当前选中模块永远完整显示——边缘贴边、中间两端各露半截 */
 function scrollTabsAfterSwitch() {
   const bar = document.getElementById("tabs");
+  const active = bar.querySelector(".tab.active");
   const first = bar.firstElementChild;
-  if (!first) return;
+  if (!bar || !active || !first) return;
+
+  const tabs = Array.from(bar.children);
+  const idx = tabs.indexOf(active);
+  const n = tabs.length;
   const maxLeft = bar.scrollWidth - bar.clientWidth;
-  const left = Math.min(first.offsetWidth / 2, maxLeft);
-  bar.scrollTo({ left: Math.max(0, left), behavior: "smooth" });
+
+  let target;
+  if (idx === 0) {
+    target = 0;                                  // 第一个：贴左，完整显示
+  } else if (idx === n - 1) {
+    target = maxLeft;                            // 最后一个：贴右，完整显示
+  } else {
+    target = Math.min(first.offsetWidth / 2, maxLeft);  // 中间：两端各露半截
+  }
+  target = Math.max(0, Math.min(target, maxLeft));
+
+  // 位置没变就不滚动，避免多余晃动
+  if (Math.abs(bar.scrollLeft - target) < 1) return;
+  bar.scrollTo({ left: target, behavior: "smooth" });
 }
 
 function renderEntries() {
@@ -2319,6 +2336,18 @@ function pdfSummary(results) {
   return `<p class="pr-summary-title">综合小结</p>` + notes.map(n => `<p>· ${n}</p>`).join("");
 }
 
+/* 提取每个量表的简短解读文字（去掉 HTML，去掉开头计分陈述，截取前 ~120 字） */
+function briefInterpret(mod, r) {
+  if (!mod.interpret) return "";
+  let text = mod.interpret(r).replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+  if (/^(得分|你勾选|你的童年回溯得分|你的得分|rMEQ 得分)/.test(text)) {
+    const i = text.indexOf("。");
+    if (i >= 0 && i < text.length - 1) text = text.slice(i + 1).trim();
+  }
+  const MAX = 120;
+  return text.length > MAX ? text.slice(0, MAX) + "…" : text;
+}
+
 /* 在 canvas 上绘制报告，返回 canvas（生成报告图片） */
 function renderReportCanvas() {
   const results = state.results;
@@ -2348,7 +2377,9 @@ function renderReportCanvas() {
   if (done.length) {
     done.forEach(m => {
       paras.push({ text: `${m.icon} ${m.name}`, f: font(26, true), c: "#1f2430", gap: 4 });
-      paras.push({ text: shortSummary(m, results[m.id]), f: font(26), c: "#5c6470", gap: 16 });
+      paras.push({ text: shortSummary(m, results[m.id]), f: font(26), c: "#5c6470", gap: 8 });
+      const bi = briefInterpret(m, results[m.id]);
+      if (bi) paras.push({ text: bi, f: font(22), c: "#6b7280", gap: 16 });
     });
   } else {
     paras.push({ text: "尚未完成任何测试。", f: font(26), c: "#5c6470", gap: 16 });
