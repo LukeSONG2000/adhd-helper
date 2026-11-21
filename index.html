@@ -239,8 +239,7 @@
   .tab-unlock-note .go { flex-shrink: 0; font-size: 12.5px; font-weight: 700; color: var(--p); }
 
   /* 综合报告顶部的模块报告导航 */
-  .chip-row { display: flex; justify-content: center; gap: 8px; overflow-x: auto; padding: 2px 0 12px; scrollbar-width: none; }
-  .chip-row::-webkit-scrollbar { display: none; }
+  .chip-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; padding: 2px 0 12px; }
   .chip {
     flex: 0 0 auto; font-family: inherit; font-size: 12.5px; padding: 7px 12px;
     border-radius: 999px; border: 1px solid #D3DEC4; background: #fff;
@@ -320,7 +319,6 @@
 .img-save-card img { width: 100%; border-radius: 8px; display: block; }
 .img-save-hint { font-size: 13px; color: #5c6470; margin: 12px 0 6px; line-height: 1.7; }
 .img-save-close { margin-top: 10px; width: 100%; padding: 13px; background: var(--p); color: #fff; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; font-family: inherit; cursor: pointer; }
-.img-save-open { display: block; width: 100%; margin-top: 14px; padding: 13px; background: var(--p); color: #fff; border-radius: 12px; font-size: 16px; font-weight: 600; font-family: inherit; cursor: pointer; text-align: center; text-decoration: none; }
 </style>
 </head>
 <body>
@@ -346,7 +344,7 @@
     <div class="tabs" id="tabs"></div>
     <div class="entry-list" id="entry-list"></div>
     <div id="comp-slot"></div>
-    <button class="btn btn-outline" onclick="downloadPDF()" style="margin-top:12px;">📄 下载PDF报告</button>
+    <button class="btn btn-outline" onclick="showReportImage()" style="margin-top:12px;">🖼️ 保存图片</button>
     <p class="foot-note">所有量表仅作自我了解与初筛参考，不能替代专业诊断。</p>
     <button class="btn btn-ghost" onclick="resetTest()" style="margin-top:8px;">重新测试</button>
   </div>
@@ -402,7 +400,7 @@
       <div>本测试仅作初筛参考，不能替代专业医生的临床诊断。</div>
     </div>
     <div class="btn-row">
-      <button class="btn btn-primary" id="r-next">下一个测试 →</button>
+      <button class="btn btn-primary" id="r-next">下一个测试</button>
       <button class="btn btn-outline" onclick="showHome()">返回首页</button>
       <button class="btn btn-ghost" id="r-retry">重新测试</button>
     </div>
@@ -1470,15 +1468,17 @@ function switchTab(id) {
   scrollTabsAfterSwitch();
 }
 
-/* 切换 Tab 后：让点击的 Tab 对齐到左边缘，左右两个方向都能正确回显（超出最右端时浏览器自动收敛） */
+/* 切换 Tab 后：左右对称地露出对侧边缘——点左半的中间项露出「生理状态」，点右半的中间项露出「核心筛查」 */
 function scrollTabsAfterSwitch() {
   const bar = document.getElementById("tabs");
   const active = bar.querySelector(".tab.active");
   if (!active) return;
-  const barRect = bar.getBoundingClientRect();
-  const activeRect = active.getBoundingClientRect();
-  const contentLeft = activeRect.left - barRect.left + bar.scrollLeft;
-  bar.scrollTo({ left: Math.max(0, contentLeft), behavior: "smooth" });
+  const tabs = Array.from(bar.children);
+  const idx = tabs.indexOf(active);
+  const n = tabs.length;
+  // 滚到最右：最后一个，或左半的中间项；否则滚到最左
+  const scrollRight = idx === n - 1 || (idx > 0 && idx < n / 2);
+  bar.scrollTo({ left: scrollRight ? bar.scrollWidth - bar.clientWidth : 0, behavior: "smooth" });
 }
 
 function renderEntries() {
@@ -1750,7 +1750,7 @@ function renderResult(mod, r) {
   if (lastInModule) {
     if (tabUnlocked(mod.tab)) {
       nextBtn.style.display = "block";
-      nextBtn.textContent = "查看本模块汇总报告 →";
+      nextBtn.textContent = "查看本模块汇总报告";
       nextBtn.onclick = () => openTabReport(mod.tab);
     } else {
       nextBtn.style.display = "none";
@@ -1758,7 +1758,7 @@ function renderResult(mod, r) {
   } else {
     const next = nextInModule(mod);
     nextBtn.style.display = "block";
-    nextBtn.textContent = `下一个测试：${next.icon} ${next.name} →`;
+    nextBtn.textContent = `下一个测试：${next.name}`;
     nextBtn.onclick = () => openGuide(MODULES.indexOf(next));
   }
 }
@@ -2324,11 +2324,7 @@ function pdfSummary(results) {
   return `<p class="pr-summary-title">综合小结</p>` + notes.map(n => `<p>· ${n}</p>`).join("");
 }
 
-function isWeChat() {
-  return /MicroMessenger/i.test(navigator.userAgent);
-}
-
-/* 在 canvas 上绘制报告，返回 canvas（供生成 PNG 图片或 PDF 文件复用） */
+/* 在 canvas 上绘制报告，返回 canvas（生成报告图片） */
 function renderReportCanvas() {
   const results = state.results;
   const done = MODULES.filter(m => results[m.id]);
@@ -2399,112 +2395,11 @@ function showReportImage() {
   mask.innerHTML = `
     <div class="img-save-card">
       <img src="${dataUrl}" alt="测试报告">
-      <p class="img-save-hint">长按上方图片，选择「保存图片」即可保存报告。<br>如需 PDF 文件，请点右上角「···」→「在浏览器打开」后再下载。</p>
+      <p class="img-save-hint">长按上方图片，选择「保存图片」即可保存报告。</p>
       <button class="img-save-close" onclick="this.closest('.img-save-mask').remove()">关闭</button>
     </div>`;
   mask.addEventListener("click", e => { if (e.target === mask) mask.remove(); });
   document.body.appendChild(mask);
-}
-
-/* 用 canvas 渲染出的 JPEG 生成最小合法 PDF（单页、图片内嵌） */
-function buildPdfFromJpeg(jpegBytes, imgW, imgH, pageW, pageH) {
-  const chunks = [];
-  const total = () => chunks.reduce((s, c) => s + c.length, 0);
-  const push = (d) => chunks.push(typeof d === "string" ? new TextEncoder().encode(d) : d);
-
-  const content = `q ${pageW} 0 0 ${pageH} 0 0 cm /Im0 Do Q`;
-  const objBody = [
-    null,
-    "<< /Type /Catalog /Pages 2 0 R >>",
-    "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
-    `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pageW} ${pageH}] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>`,
-    null,
-    `<< /Length ${content.length} >>\nstream\n${content}\nendstream`
-  ];
-
-  push("%PDF-1.4\n");
-  const offsets = [0, 0, 0, 0, 0, 0];
-  for (let i = 1; i <= 5; i++) {
-    offsets[i] = total();
-    push(`${i} 0 obj\n`);
-    if (i === 4) {
-      push(`<< /Type /XObject /Subtype /Image /Width ${imgW} /Height ${imgH} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpegBytes.length} >>\nstream\n`);
-      push(jpegBytes);
-      push("\nendstream");
-    } else {
-      push(objBody[i]);
-    }
-    push("\nendobj\n");
-  }
-
-  const xrefOffset = total();
-  push("xref\n0 6\n0000000000 65535 f \n");
-  for (let i = 1; i <= 5; i++) push(String(offsets[i]).padStart(10, "0") + " 00000 n \n");
-  push(`trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`);
-
-  const out = new Uint8Array(total());
-  let pos = 0;
-  chunks.forEach(c => { out.set(c, pos); pos += c.length; });
-  return out;
-}
-
-/* 直接下载 PDF 文件到本地（替代 window.print 的打印对话框） */
-function downloadPdfFile() {
-  const canvas = renderReportCanvas();
-  const jpegDataUrl = canvas.toDataURL("image/jpeg", 0.95);
-  const bin = atob(jpegDataUrl.split(",")[1]);
-  const jpegBytes = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; i++) jpegBytes[i] = bin.charCodeAt(i);
-
-  const imgW = canvas.width, imgH = canvas.height;
-  const pageW = 595;                       // A4 宽度，保持比例
-  const pageH = Math.max(1, Math.ceil(pageW * imgH / imgW));
-  const pdf = buildPdfFromJpeg(jpegBytes, imgW, imgH, pageW, pageH);
-
-  const blob = new Blob([pdf], { type: "application/pdf" });
-  const url = URL.createObjectURL(blob);
-
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-
-  if (isIOS) {
-    // iOS Safari 对 <a download> 支持不稳，提供「打开 PDF」与「长按存图」两条保存路径
-    showIosPdfSave(url, canvas.toDataURL("image/png"));
-  } else {
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "ADHD自测报告.pdf";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(url), 1500);
-  }
-}
-
-/* iOS Safari：提供「打开 PDF（分享→存储到文件）」与「长按图片保存到相册」两条路径 */
-function showIosPdfSave(pdfUrl, pngDataUrl) {
-  document.querySelectorAll(".img-save-mask").forEach(e => e.remove());
-  const mask = document.createElement("div");
-  mask.className = "img-save-mask";
-  mask.innerHTML = `
-    <div class="img-save-card">
-      <p class="img-save-hint" style="font-weight:700;font-size:15px;color:var(--t);margin-top:0;">📄 下载 PDF 报告</p>
-      <a class="img-save-open" href="${pdfUrl}" target="_blank" rel="noopener">打开 PDF（点右上角分享 → 存储到“文件”）</a>
-      <p class="img-save-hint">也可以长按下方图片，选择「保存到照片」：</p>
-      <img src="${pngDataUrl}" alt="测试报告">
-      <button class="img-save-close" onclick="this.closest('.img-save-mask').remove()">关闭</button>
-    </div>`;
-  mask.addEventListener("click", e => { if (e.target === mask) mask.remove(); });
-  document.body.appendChild(mask);
-  setTimeout(() => URL.revokeObjectURL(pdfUrl), 60000);
-}
-
-function downloadPDF() {
-  // 微信内置浏览器不支持下载，改为生成图片长按保存
-  if (isWeChat()) { showReportImage(); return; }
-
-  // 其他浏览器：直接生成 PDF 文件下载（不再弹打印对话框）
-  downloadPdfFile();
 }
 
 /* ===== 重新测试：清除所有结果 ===== */
