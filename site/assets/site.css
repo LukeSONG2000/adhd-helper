@@ -80,55 +80,11 @@ h1, h2 { text-wrap: balance; }
 }
 .header-line nav { display: flex; flex-wrap: wrap; gap: clamp(.75rem, 3.5vw, 2rem); }
 .header-line nav a { display: inline-flex; min-height: 2.75rem; align-items: center; color: var(--muted); }
-.hero {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(15rem, .5fr);
-  gap: clamp(1.5rem, 5vw, 5rem);
-  align-items: end;
-  padding-block: clamp(3.25rem, 8vw, 7rem) clamp(2.75rem, 6vw, 5rem);
-}
-.hero h1, .article-header h1 {
-  font-family: var(--serif);
-  font-weight: 700;
-  line-height: 1.16;
-  letter-spacing: -.04em;
-}
-.hero h1 { font-size: clamp(2.35rem, 6.75vw, 5.75rem); }
-.hero h1 span { display: block; }
-.hero-content > p { max-width: 34rem; color: var(--muted); margin-block: 1.35rem 1.7rem; }
-.hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .65rem 1.4rem; }
-.button, .test-link {
-  display: inline-flex;
-  min-height: 2.75rem;
-  align-items: center;
-  justify-content: center;
-  padding: .55rem 1rem;
-  border-radius: .35rem;
-  text-decoration: none;
-  font-weight: 700;
-}
-.button { background: var(--green); color: var(--on-green); }
-.button:hover, .test-link:hover { text-decoration: underline; }
-.secondary-link { display: inline-flex; min-height: 2.75rem; align-items: center; }
-.test-card {
-  align-self: stretch;
-  display: flex;
-  flex-direction: column;
-  align-items: start;
-  justify-content: end;
-  padding: clamp(1.35rem, 3.6vw, 2.5rem);
-  border-radius: .5rem;
-  color: var(--on-green);
-  background: var(--green);
-}
-.test-card h2 { font: 700 clamp(1.65rem, 2.35vw, 2.35rem)/1.25 var(--serif); }
-.test-card p { margin-block: .65rem 1.2rem; color: #e0ead4; }
-.test-link { background: var(--accent); color: #1a2f22; }
-.test-link:focus-visible { outline-color: var(--accent); }
-
-.library { border-block-start: 1px solid var(--line); padding-block: 1.8rem 3.5rem; scroll-margin-top: .75rem; }
-.library-header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: start; gap: 1.25rem; }
-.library-header h2, .downloads h2 { font: 700 clamp(1.75rem, 3vw, 2.85rem)/1.2 var(--serif); }
+.library { padding-block: 1rem 2rem; scroll-margin-top: .75rem; }
+.library-header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: start; gap: .75rem 1.25rem; }
+.library-header h1 { font-size: 1.25rem; line-height: 1.35; }
+.library-links { display: flex; flex-wrap: wrap; gap: .25rem 1rem; }
+.library-links a { display: inline-flex; align-items: center; min-height: 2.75rem; }
 .search { width: min(100%, 21rem); }
 .search label { display: block; font-size: .9rem; font-weight: 700; margin-bottom: .35rem; }
 .search input {
@@ -165,10 +121,10 @@ h1, h2 { text-wrap: balance; }
   scroll-margin-top: 1rem;
 }
 .part-heading { display: flex; align-items: start; gap: .5rem; }
-.part-heading h3 { font-size: 1.125rem; line-height: 1.35; }
+.part-heading h2 { font-size: 1.125rem; line-height: 1.35; }
 .part-mark { flex: 0 0 .45rem; height: .45rem; margin-top: .46rem; border-radius: 50%; background: var(--link); }
 .part-chapters { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.2rem 2rem; }
-.part-chapters h4 { display: block; color: var(--muted); font-size: .98rem; }
+.part-chapters h3 { display: block; color: var(--muted); font-size: .98rem; }
 .part-chapters ul { list-style: none; margin: 0; padding: 0; }
 .part-chapters [data-chapter]:only-child { grid-column: 1 / -1; }
 .part-chapters [data-chapter]:only-child ul { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 2rem; }
@@ -231,15 +187,14 @@ tbody tr:last-child td { border-block-end: 0; }
 
 @media (max-width: 45rem) {
   .wrap { width: calc(100% - 2rem); }
-  .hero, .part { grid-template-columns: minmax(0, 1fr); }
-  .hero { padding-top: 2.8rem; }
-  .test-card { max-width: 30rem; }
+  .part { grid-template-columns: minmax(0, 1fr); }
   .library { padding-bottom: 2rem; }
   .part-chapters { gap: .8rem 1.2rem; }
   .part-chapters [data-chapter]:only-child ul { gap: 0 1.2rem; }
 }
 @media (max-width: 30rem) {
-  .header-line { padding-block: .35rem; }
+  .header-line { min-height: 3.15rem; padding-block: .12rem; }
+  .wrap { width: calc(100% - 1.5rem); }
   .part-chapters, .part-chapters [data-chapter]:only-child ul { grid-template-columns: minmax(0, 1fr); }
   .downloads h2 { width: 100%; }
   .footer-line { padding-block: .5rem; }

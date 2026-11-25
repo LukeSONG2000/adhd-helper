@@ -3,7 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ADHD 与神经多样性自测矩阵</title>
+<title>ADHD 自测 · ADHD Helper</title>
+<meta name="description" content="ADHD 与神经多样性自测，含 14 项量表与报告。">
+<script>
+if (["#library", "#action", "#foundations", "#toolbox"].includes(location.hash)) {
+  location.replace("./guide.html" + location.search + location.hash);
+}
+</script>
 <link rel="icon" type="image/png" href="site/assets/favicon.png">
 <link rel="stylesheet" href="site/assets/site.css">
 <link rel="stylesheet" href="site/assets/assessment.css">
@@ -14,9 +20,8 @@
   <div class="wrap header-line">
     <a class="wordmark" href="./"><span class="mark" aria-hidden="true"></span>ADHD Helper</a>
     <nav aria-label="主导航">
-      <a href="./#library">指南</a>
-      <a href="./test.html" aria-current="page">自测</a>
-      <a href="https://github.com/LukeSONG2000/adhd-helper">GitHub</a>
+      <a href="./" aria-current="page">自测</a>
+      <a href="./guide.html">指南</a>
     </nav>
   </div>
 </header>
@@ -26,16 +31,10 @@
 
   <!-- ================= 首页 ================= -->
   <section class="screen" id="s-home">
-    <div class="test-overview">
-      <div class="home-head">
-        <h1 tabindex="-1">ADHD 与神经多样性 <span>自测矩阵</span></h1>
-        <p>选择任一量表开始。答案和进度保存在当前浏览器，本自测仅供自我了解与初筛参考。</p>
-      </div>
-      <div class="home-progress" id="home-progress"></div>
-    </div>
+    <div class="home-progress" id="home-progress"></div>
     <div class="tabs" id="tabs" role="group" aria-label="量表分类"></div>
     <section class="scale-section" aria-labelledby="scale-heading">
-      <h2 id="scale-heading"></h2>
+      <h2 id="scale-heading" class="visually-hidden"></h2>
       <div class="entry-list" id="entry-list"></div>
     </section>
     <div id="comp-slot"></div>
@@ -43,6 +42,7 @@
       <button class="btn btn-outline" id="export-report" onclick="showReportImage()">导出报告图片</button>
       <button class="btn btn-ghost" id="clear-results" onclick="resetTest()">清除本机进度</button>
     </div>
+    <p class="home-note">进度仅保存在当前浏览器。自测结果仅供初筛参考。</p>
   </section>
 
   <!-- ================= 引导页 ================= -->
@@ -101,6 +101,7 @@
     <div class="btn-row">
       <button class="btn btn-primary" id="r-next">下一个测试</button>
       <button class="btn btn-outline" onclick="showHome()">返回量表目录</button>
+      <button class="btn btn-ghost" onclick="openGuide(MODULES.indexOf(curMod))">量表说明</button>
       <button class="btn btn-ghost" id="r-retry">重新测试</button>
     </div>
   </section>
@@ -120,7 +121,7 @@
     <div class="btn-row">
       <button class="btn btn-primary" id="tr-next-module" style="display:none;">下一个模块测试</button>
       <button class="btn btn-outline" onclick="showHome()">返回量表目录</button>
-      <a class="btn btn-outline" href="./#library">阅读 ADHD 人生设计指南</a>
+      <a class="btn btn-outline" href="./guide.html">阅读 ADHD 人生设计指南</a>
     </div>
     <button class="btn btn-ghost" id="tr-comp" style="display:none;">查看综合报告</button>
   </section>
@@ -135,7 +136,7 @@
     <div class="chip-row" id="c-tabnav"></div>
     <div id="c-body"></div>
     <div class="author">测试作者：烛火虫</div>
-    <a class="btn btn-outline" href="./#library">阅读 ADHD 人生设计指南</a>
+    <a class="btn btn-outline" href="./guide.html">阅读 ADHD 人生设计指南</a>
     <div class="btn-row"><button class="btn btn-ghost" onclick="showHome()">返回量表目录</button></div>
   </section>
 
@@ -154,7 +155,7 @@
 </main>
 <footer class="site-footer">
   <div class="wrap footer-line">
-    <a href="./">ADHD Helper</a>
+    <a href="https://github.com/LukeSONG2000/adhd-helper">项目源码</a>
     <a href="https://github.com/ZHCstudio/adhd-test">题库与报告来源：ZHCstudio/adhd-test</a>
   </div>
 </footer>
@@ -1184,23 +1185,17 @@ function renderEntries() {
     const result = currentResult(m);
     const index = MODULES.indexOf(m);
     const count = answeredCount(m);
-    const badge = result ? '<span class="badge done">已完成</span>'
-      : count > 0 ? '<span class="badge doing">进行中</span>' : "";
     const detail = result ? escapeHtml(summaryOf(m, result))
       : count > 0 ? `已答 ${count} / ${m.items.length} 题` : `${m.items.length} 题 · 约 ${m.time} 分钟`;
-    const action = result ? "量表说明" : count > 0 ? "继续作答" : "查看量表";
-    return `<article class="entry">
-      <div class="entry-top">
-        <h3 class="entry-title">${m.name}</h3>
-        ${badge}
-      </div>
-      <p class="entry-desc">${m.desc}</p>
-      <p class="entry-summary">${detail}</p>
-      <div class="entry-actions">
-        ${result ? `<button class="btn btn-outline" type="button" onclick="viewResult('${m.id}')">查看结果<span class="visually-hidden"> · ${m.name}</span></button>` : ""}
-        <button class="btn btn-ghost" type="button" onclick="openGuide(${index})">${action}<span class="visually-hidden"> · ${m.name}</span></button>
-      </div>
-    </article>`;
+    const action = result ? "查看结果" : count > 0 ? "继续" : "开始";
+    const open = result ? `viewResult('${m.id}')` : `openGuide(${index})`;
+    return `<button class="entry" type="button" onclick="${open}" aria-labelledby="scale-${m.id} action-${m.id}" aria-describedby="detail-${m.id}">
+      <span class="entry-copy">
+        <span class="entry-title" id="scale-${m.id}">${m.name}</span>
+        <span class="entry-summary" id="detail-${m.id}">${detail}</span>
+      </span>
+      <span class="entry-action" id="action-${m.id}">${action}</span>
+    </button>`;
   }).join("");
 
   document.getElementById("entry-list").innerHTML = cards + tabReportCard(activeTab);
@@ -1218,7 +1213,7 @@ function tabReportCard(tabId) {
       <div class="tr-icon">🗂️</div>
       <div class="tr-main">
         <div class="tr-title">查看本模块汇总报告</div>
-        <div class="tr-desc">${t.name} ${all} 项已完成${st.viewed ? " · 已生成过，可随时回看" : " · 已解锁"}</div>
+        <div class="tr-desc">${t.name} · ${all} 项已完成</div>
       </div>
       <div class="tr-badge">${st.viewed ? "已查看" : "可查看 →"}</div>
     </button>`;
@@ -1227,7 +1222,7 @@ function tabReportCard(tabId) {
     <div class="tr-icon">🔒</div>
     <div class="tr-main">
       <div class="tr-title">本模块汇总报告</div>
-      <div class="tr-desc">完成${t.name}全部 ${all} 项后解锁（已完成 ${done}/${all}）</div>
+      <div class="tr-desc">完成本组量表后可查看</div>
       <div class="tr-mini-bar"><div class="tr-mini-fill" style="width:${Math.round(done / all * 100)}%"></div></div>
     </div>
     <div class="tr-badge">${done}/${all}</div>
@@ -1238,38 +1233,18 @@ function renderHomeProgress() {
   const done = MODULES.filter(m => state.results[m.id]).length;
   const total = MODULES.length;
   document.getElementById("home-progress").innerHTML = `
-    <div class="progress-row"><span>整体进度</span><strong>${done} / ${total} 项</strong></div>
+    <div class="progress-row"><h1 tabindex="-1">自测进度</h1><strong>${done} / ${total} 项</strong></div>
     <progress class="bar" aria-label="已完成量表数" max="${total}" value="${done}"></progress>`;
 }
 
 function renderCompSlot() {
   const done = MODULES.filter(m => state.results[m.id]).length;
   const total = MODULES.length;
-  const tabOk = TABS.filter(t => tabUnlocked(t.id)).length;
-  const slot = document.getElementById("comp-slot");
-  if (done >= total) {
-    slot.innerHTML = `<button class="comp-entry" onclick="showComprehensive()">
-      <div class="entry-top">
-        <div class="entry-icon" style="background:rgba(255,255,255,.2)">🧭</div>
-        <div class="entry-main">
-          <div class="entry-title">查看综合报告</div>
-          <div class="entry-desc">14 项全部完成 · 模块报告 ${tabOk}/4 · 查看整体画像与建议</div>
-        </div>
-        <div class="entry-right"><span class="badge">可查看 →</span></div>
-      </div>
-    </button>`;
-  } else {
-    slot.innerHTML = `<button class="comp-entry" onclick="compLocked()">
-      <div class="entry-top">
-        <div class="entry-icon" style="background:rgba(255,255,255,.2)">🔒</div>
-        <div class="entry-main">
-          <div class="entry-title">综合报告</div>
-          <div class="entry-desc">完成全部 14 项后解锁 · 模块报告已解锁 ${tabOk}/4</div>
-        </div>
-        <div class="entry-right"><span class="badge">${done}/${total}</span></div>
-      </div>
-    </button>`;
-  }
+  const action = done === total ? "查看报告" : `${done}/${total} 项`;
+  document.getElementById("comp-slot").innerHTML = `<button class="comp-entry" onclick="showComprehensive()">
+    <span class="entry-title">综合报告</span>
+    <span class="report-action">${action}</span>
+  </button>`;
 }
 
 function showHome(moveFocus = true) {

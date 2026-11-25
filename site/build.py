@@ -15,7 +15,7 @@ NOTES = ROOT / "guide" / "ADHD人生设计指南"
 FULL_GUIDE = ROOT / "guide" / "ADHD人生设计指南 - 全文.md"
 DEST = ROOT / "_site"
 REPOSITORY = "https://github.com/LukeSONG2000/adhd-helper"
-TEST_PAGE = "test.html"
+GUIDE_PAGE = "guide.html"
 UPSTREAM = "https://github.com/ZHCstudio/adhd-test"
 SECTIONS = {
     "action": "行动指南运用篇",
@@ -62,8 +62,8 @@ def load_notes():
     return notes
 
 
-def shell(title, content, base="", home=False):
-    page_title = title if home else f"{title} · ADHD Helper"
+def shell(title, content, base=""):
+    page_title = f"{title} · ADHD Helper"
     return f"""<!doctype html>
 <html lang="zh-CN">
 <head>
@@ -80,26 +80,25 @@ def shell(title, content, base="", home=False):
     <div class="wrap header-line">
       <a class="wordmark" href="{base or './'}"><span class="mark" aria-hidden="true"></span>ADHD Helper</a>
       <nav aria-label="主导航">
-        <a href="{base}index.html#library">指南</a>
-        <a href="{base}{TEST_PAGE}">自测</a>
-        <a href="{REPOSITORY}">GitHub</a>
+        <a href="{base or './'}">自测</a>
+        <a href="{base}{GUIDE_PAGE}" aria-current="page">指南</a>
       </nav>
     </div>
   </header>
   {content}
   <footer class="site-footer">
-    <div class="wrap footer-line"><a href="{base or './'}">ADHD Helper</a><a href="{UPSTREAM}">自测项目 ZHCstudio/adhd-test</a></div>
+    <div class="wrap footer-line"><a href="{REPOSITORY}">项目源码</a><a href="{UPSTREAM}">自测题库来源：ZHCstudio/adhd-test</a></div>
   </footer>
 </body>
 </html>
 """
 
 
-def note_link(note, prefix="", css_class=""):
-    return f'<a class="{css_class}" href="{prefix}{note.url}">{escape(note.title)}</a>'
+def note_link(note):
+    return f'<a href="{note.url}">{escape(note.title)}</a>'
 
 
-def build_home(notes):
+def build_library(notes):
     groups = defaultdict(lambda: defaultdict(list))
     for note in notes:
         if note.section:
@@ -113,35 +112,25 @@ def build_home(notes):
             links = "\n".join(
                 f'<li data-note="{note.url}">{note_link(note)}</li>' for note in matching
             )
-            heading = f"<h4>{escape(chapter)}</h4>" if chapter else ""
+            heading = f"<h3>{escape(chapter)}</h3>" if chapter else ""
             group_blocks.append(f'<div data-chapter>{heading}<ul>{links}</ul></div>')
         parts.append(f"""
         <section class="part" id="{section}" data-part>
-          <div class="part-heading"><span class="part-mark" aria-hidden="true"></span><h3>{label}</h3></div>
+          <div class="part-heading"><span class="part-mark" aria-hidden="true"></span><h2>{label}</h2></div>
           <div class="part-chapters">{''.join(group_blocks)}</div>
         </section>""")
 
     content = f"""
   <main id="main" class="wrap">
-    <section class="hero" aria-labelledby="page-title">
-      <div class="hero-content">
-        <h1 id="page-title">ADHD <span>人生设计指南</span></h1>
-        <p>按当下的需要找一篇。这里有关于睡眠、专注、情绪、工作和关系的指南，也有可以直接使用的清单和记录表。</p>
-        <div class="hero-actions">
-          <a class="button" href="#library">浏览指南</a>
-          {note_link(start, css_class='secondary-link')}
-        </div>
-      </div>
-      <aside class="test-card" aria-labelledby="test-title">
-        <h2 id="test-title">ADHD 自测</h2>
-        <p>从 14 项量表中选择一项开始，进度保存在当前浏览器。</p>
-        <a class="test-link" href="{TEST_PAGE}">开始自测</a>
-      </aside>
-    </section>
-
     <section id="library" class="library" aria-labelledby="library-title">
       <div class="library-header">
-        <h2 id="library-title">指南目录</h2>
+        <div>
+          <h1 id="library-title">人生设计指南</h1>
+          <div class="library-links">
+            {note_link(start)}
+            <a href="#downloads">下载 Markdown</a>
+          </div>
+        </div>
         <div class="search" hidden>
           <label for="guide-search">搜索指南</label>
           <input id="guide-search" type="search" placeholder="例如：起床、时间盲、过载" autocomplete="off" aria-controls="guide-sections">
@@ -155,7 +144,7 @@ def build_home(notes):
       <p id="no-results" hidden>没有找到匹配的文章。可以换个关键词。</p>
     </section>
 
-    <section class="downloads" aria-labelledby="download-title">
+    <section id="downloads" class="downloads" aria-labelledby="download-title">
       <h2 id="download-title">下载 Markdown</h2>
       <a href="downloads/adhd-guide.md" download="{escape(FULL_GUIDE.name)}">全文 Markdown</a>
       <a href="downloads/adhd-guide-obsidian.zip" download="ADHD人生设计指南 - Obsidian.zip">Obsidian 分篇笔记</a>
@@ -163,7 +152,7 @@ def build_home(notes):
   </main>
   <script src="assets/search.js" defer></script>
 """
-    (DEST / "index.html").write_text(shell("ADHD Helper", content, home=True), encoding="utf-8")
+    (DEST / GUIDE_PAGE).write_text(shell("人生设计指南", content), encoding="utf-8")
 
 
 def note_markup(note, base):
@@ -176,7 +165,7 @@ def note_markup(note, base):
             headings.append((anchor, tokens[index + 1].content))
         for child in token.children or ():
             if child.type == "link_open" and unquote(child.attrGet("href") or "").endswith("总目录.md"):
-                child.attrSet("href", f"{base}index.html#library")
+                child.attrSet("href", f"{base}{GUIDE_PAGE}#library")
 
     markup = MARKDOWN.renderer.render(tokens, MARKDOWN.options, {})
     markup = markup.replace('<table>', '<div class="table-scroll" role="region" tabindex="0" aria-label="表格，可横向滚动"><table>')
@@ -196,7 +185,7 @@ def build_note(note):
     location = f'<p class="location">{escape(" / ".join(x for x in (section, note.chapter) if x))}</p>' if section else ""
     content = f"""
   <main id="main" class="wrap reader">
-    <a class="back" href="{base}index.html#library">返回指南目录</a>
+    <a class="back" href="{base}{GUIDE_PAGE}#library">返回指南目录</a>
     <article aria-labelledby="article-title">
       <header class="article-header">
         {location}
@@ -225,9 +214,20 @@ def main():
         shutil.rmtree(DEST)
     shutil.copytree(ROOT / "site" / "assets", DEST / "assets")
     notes = load_notes()
-    build_home(notes)
+    build_library(notes)
     assessment = (ROOT / "index.html").read_text(encoding="utf-8")
-    (DEST / TEST_PAGE).write_text(assessment.replace('href="site/assets/', 'href="assets/'), encoding="utf-8")
+    (DEST / "index.html").write_text(assessment.replace('href="site/assets/', 'href="assets/'), encoding="utf-8")
+    (DEST / "test.html").write_text("""<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="refresh" content="0; url=./">
+  <title>打开 ADHD 自测</title>
+</head>
+<body><a href="./">打开 ADHD 自测</a></body>
+</html>
+""", encoding="utf-8")
     for note in notes:
         build_note(note)
     searchable = {
@@ -238,7 +238,7 @@ def main():
         json.dumps(searchable, ensure_ascii=False, separators=(",", ":")), encoding="utf-8"
     )
     build_downloads()
-    print(f"Built {len(notes)} guide pages, the home page and the assessment in {DEST}")
+    print(f"Built {len(notes)} guide notes, the guide directory and the assessment in {DEST}")
 
 
 if __name__ == "__main__":
