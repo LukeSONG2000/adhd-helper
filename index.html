@@ -6,9 +6,13 @@
 <title>ADHD 自测 · ADHD Helper</title>
 <meta name="description" content="ADHD 与神经多样性自测，含 14 项量表与报告。">
 <script>
-if (["#library", "#action", "#foundations", "#toolbox"].includes(location.hash)) {
-  location.replace("./guide.html" + location.search + location.hash);
+function openLegacyGuideSection() {
+  if (["#library", "#action", "#foundations", "#toolbox"].includes(location.hash)) {
+    location.replace("./guide.html" + location.search + location.hash);
+  }
 }
+addEventListener("hashchange", openLegacyGuideSection);
+openLegacyGuideSection();
 </script>
 <link rel="icon" type="image/png" href="site/assets/favicon.png">
 <link rel="stylesheet" href="site/assets/site.css">
