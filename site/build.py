@@ -15,7 +15,7 @@ NOTES = ROOT / "guide" / "ADHD人生设计指南"
 FULL_GUIDE = ROOT / "guide" / "ADHD人生设计指南 - 全文.md"
 DEST = ROOT / "_site"
 REPOSITORY = "https://github.com/LukeSONG2000/adhd-helper"
-TEST_SITE = "https://zhcstudio.github.io/adhd-test/"
+TEST_PAGE = "test.html"
 UPSTREAM = "https://github.com/ZHCstudio/adhd-test"
 SECTIONS = {
     "action": "行动指南运用篇",
@@ -81,7 +81,7 @@ def shell(title, content, base="", home=False):
       <a class="wordmark" href="{base or './'}"><span class="mark" aria-hidden="true"></span>ADHD Helper</a>
       <nav aria-label="主导航">
         <a href="{base}index.html#library">指南</a>
-        <a href="{TEST_SITE}">自测</a>
+        <a href="{base}{TEST_PAGE}">自测</a>
         <a href="{REPOSITORY}">GitHub</a>
       </nav>
     </div>
@@ -134,8 +134,8 @@ def build_home(notes):
       </div>
       <aside class="test-card" aria-labelledby="test-title">
         <h2 id="test-title">ADHD 自测</h2>
-        <p>打开 ZHCstudio 的 ADHD 与神经多样性自测矩阵。</p>
-        <a class="test-link" href="{TEST_SITE}">打开自测原站</a>
+        <p>从 14 项量表中选择一项开始，进度保存在当前浏览器。</p>
+        <a class="test-link" href="{TEST_PAGE}">开始自测</a>
       </aside>
     </section>
 
@@ -226,6 +226,8 @@ def main():
     shutil.copytree(ROOT / "site" / "assets", DEST / "assets")
     notes = load_notes()
     build_home(notes)
+    assessment = (ROOT / "index.html").read_text(encoding="utf-8")
+    (DEST / TEST_PAGE).write_text(assessment.replace('href="site/assets/', 'href="assets/'), encoding="utf-8")
     for note in notes:
         build_note(note)
     searchable = {
@@ -236,7 +238,7 @@ def main():
         json.dumps(searchable, ensure_ascii=False, separators=(",", ":")), encoding="utf-8"
     )
     build_downloads()
-    print(f"Built {len(notes)} guide pages and the home page in {DEST}")
+    print(f"Built {len(notes)} guide pages, the home page and the assessment in {DEST}")
 
 
 if __name__ == "__main__":

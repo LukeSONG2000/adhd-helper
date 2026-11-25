@@ -2,358 +2,55 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ADHD 与神经多样性自测矩阵</title>
-<style>
-  :root {
-    --p: #6E8C4D;
-    --p-dark: #4C6530;
-    --p-light: #EEF3E4;
-    --bg: #EDF2E6;
-    --card: #ffffff;
-    --t: #1f2430;
-    --t2: #5c6470;
-    --t3: #9aa1ac;
-    --bd: #e6e9ef;
-    --ok: #2e9e5b;
-    --warn: #b8860b;
-    --danger: #b3261e;
-    --radius: 16px;
-  }
-  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  html, body { height: 100%; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
-    background: var(--bg);
-    color: var(--t);
-    line-height: 1.6;
-    -webkit-font-smoothing: antialiased;
-  }
-  .app { max-width: 600px; margin: 0 auto; min-height: 100vh; padding: 0 16px; display: flex; flex-direction: column; }
-
-  /* ============ 通用 ============ */
-  .screen { display: none; flex: 1; flex-direction: column; padding-bottom: 32px; }
-  .screen.active { display: flex; }
-  .card {
-    background: var(--card); border-radius: var(--radius);
-    padding: 22px 18px; box-shadow: 0 2px 12px rgba(31,36,48,.05);
-  }
-  .btn {
-    display: block; width: 100%; border: none; border-radius: 14px;
-    padding: 16px; font-size: 17px; font-weight: 600; font-family: inherit;
-    cursor: pointer; text-align: center; transition: transform .1s ease;
-  }
-  .btn:active { transform: scale(.98); }
-  .btn-primary { background: var(--p); color: #fff; }
-  .btn-outline { background: #fff; color: var(--p); border: 2px solid var(--p); }
-  .btn-ghost { background: transparent; color: var(--t3); font-size: 14px; padding: 12px; }
-  .btn-link {
-    display: block; width: 100%; text-align: center; text-decoration: none;
-    background: linear-gradient(135deg, #F5A623, #E07B1A);
-    color: #fff; border-radius: 14px; padding: 16px;
-    font-size: 17px; font-weight: 600;
-  }
-  .btn-row { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
-  .muted { color: var(--t2); }
-  .small { font-size: 13px; }
-
-  /* ============ 首页 ============ */
-  .home-head { padding: 26px 0 6px; }
-  .home-head h1 { font-size: 24px; letter-spacing: -.3px; }
-  .home-head p { font-size: 13.5px; color: var(--t2); margin-top: 4px; }
-  .home-progress { margin: 16px 0 6px; }
-  .progress-row { display: flex; justify-content: space-between; align-items: baseline; font-size: 13.5px; color: var(--t2); margin-bottom: 7px; }
-  .progress-row strong { color: var(--t); font-size: 15px; }
-  .bar { height: 7px; background: var(--bd); border-radius: 999px; overflow: hidden; }
-  .bar-fill { height: 100%; width: 0; background: linear-gradient(90deg, var(--p), #9CB27C); border-radius: 999px; transition: width .3s ease; }
-
-  .tabs {
-    display: flex; gap: 8px; overflow-x: auto; padding: 14px 0 4px;
-    -webkit-overflow-scrolling: touch; scrollbar-width: none;
-  }
-  .tabs::-webkit-scrollbar { display: none; }
-  .tab {
-    flex: 0 0 auto; border: 1px solid var(--bd); background: #fff;
-    color: var(--t2); font-family: inherit; font-size: 14px; font-weight: 500;
-    padding: 9px 15px; border-radius: 999px; cursor: pointer; white-space: nowrap;
-    transition: all .15s;
-  }
-  .tab.active { background: var(--p); border-color: var(--p); color: #fff; font-weight: 600; }
-
-  .entry-list { display: flex; flex-direction: column; gap: 12px; margin: 14px 0 8px; }
-  .entry {
-    background: var(--card); border: 2px solid transparent; border-radius: var(--radius);
-    padding: 16px; text-align: left; width: 100%; font-family: inherit; color: inherit;
-    box-shadow: 0 2px 10px rgba(31,36,48,.05); cursor: pointer; transition: transform .1s;
-  }
-  .entry:active { transform: scale(.988); }
-  .entry-top { display: flex; align-items: flex-start; gap: 12px; }
-  .entry-icon {
-    width: 44px; height: 44px; flex-shrink: 0; border-radius: 12px;
-    display: flex; align-items: center; justify-content: center; font-size: 22px;
-  }
-  .entry-main { flex: 1; min-width: 0; }
-  .entry-title { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-  .entry-desc { font-size: 12.5px; color: var(--t2); margin-top: 2px; }
-  .entry-note { font-size: 12px; color: var(--t3); margin-top: 6px; }
-  .entry-summary { font-size: 12.5px; color: var(--t); margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--bd); font-weight: 600; }
-  .entry-right { flex-shrink: 0; text-align: right; }
-  .badge { font-size: 11.5px; padding: 3px 9px; border-radius: 999px; background: var(--bg); color: var(--t3); white-space: nowrap; }
-  .badge.done { background: #e9f8ef; color: var(--ok); font-weight: 600; }
-  .badge.doing { background: #fff7e6; color: var(--warn); font-weight: 600; }
-  .view-link { display: inline-block; font-size: 12px; color: var(--p); font-weight: 600; text-decoration: underline; margin-top: 4px; }
-
-  .comp-entry {
-    background: linear-gradient(135deg, #6E8C4D, #7E965A); color: #fff;
-    border-radius: var(--radius); padding: 18px; width: 100%; text-align: left;
-    font-family: inherit; border: none; cursor: pointer; margin-top: 4px;
-  }
-  .comp-entry .entry-title, .comp-entry .entry-desc { color: #fff; }
-  .comp-entry .entry-desc { opacity: .88; }
-  .comp-entry .badge { background: rgba(255,255,255,.2); color: #fff; }
-  .foot-note { text-align: center; font-size: 11.5px; color: var(--t3); margin: 14px 0 4px; }
-
-  /* ============ 引导页 ============ */
-  .guide-head { text-align: center; padding: 22px 0 6px; }
-  .guide-head .em { font-size: 46px; }
-  .guide-head h2 { font-size: 21px; margin-top: 8px; }
-  .guide-tag { text-align: center; font-size: 12.5px; color: var(--p); margin: 4px 0 14px; }
-  .info-grid { display: flex; gap: 10px; margin-bottom: 14px; }
-  .info-cell { flex: 1; background: #fff; border-radius: 12px; padding: 11px 6px; text-align: center; box-shadow: 0 1px 6px rgba(31,36,48,.04); }
-  .info-cell .num { font-size: 18px; font-weight: 700; color: var(--p-dark); }
-  .info-cell .lb { font-size: 11.5px; color: var(--t2); }
-  .guide-body { font-size: 14.5px; color: var(--t2); }
-  .guide-body p { margin-bottom: 10px; }
-  .guide-body strong { color: var(--t); }
-  .guide-point { display: flex; gap: 9px; align-items: flex-start; background: var(--p-light); border-radius: 11px; padding: 11px 13px; margin: 10px 0; font-size: 13.5px; color: var(--t); }
-  .guide-point.warn { background: #fdf6e3; }
-  .guide-point .ic { flex-shrink: 0; }
-
-  /* ============ 答题页 ============ */
-  .topbar { position: sticky; top: 0; background: var(--bg); padding: 14px 0 10px; z-index: 20; }
-  .topbar .progress-row { margin-bottom: 7px; }
-  .q-card { margin-top: 6px; }
-  .q-index { font-size: 12.5px; color: var(--t3); margin-bottom: 5px; }
-  .q-text { font-size: 18.5px; font-weight: 600; line-height: 1.55; }
-  .q-hint { margin-top: 9px; font-size: 12.5px; color: var(--warn); background: #fdf6e3; border-radius: 9px; padding: 8px 11px; }
-  .q-ex { margin-top: 9px; font-size: 12.5px; color: var(--t3); background: var(--bg); border-left: 3px solid var(--bd); border-radius: 0 8px 8px 0; padding: 8px 11px; }
-  .options { margin-top: 18px; display: flex; flex-direction: column; gap: 11px; }
-  .opt {
-    width: 100%; min-height: 62px; padding: 15px 18px; font-size: 16.5px; font-weight: 500;
-    font-family: inherit; color: var(--t); background: #fff; border: 2px solid var(--bd);
-    border-radius: 13px; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 11px;
-    transition: border-color .15s, background .15s;
-  }
-  .opt .dot { width: 11px; height: 11px; border-radius: 50%; border: 2px solid var(--bd); flex-shrink: 0; transition: all .15s; }
-  .opt.picked { border-color: var(--p); background: var(--p-light); }
-  .opt.picked .dot { border-color: var(--p); background: var(--p); }
-  .back-line { margin-top: 14px; }
-  .back-btn { background: none; border: none; color: var(--t3); font-size: 14px; font-family: inherit; padding: 6px 0; cursor: pointer; }
-
-  /* ============ 结果页 ============ */
-  .res-head { text-align: center; padding: 24px 0 4px; }
-  .res-head .em { font-size: 50px; }
-  .res-head h2 { font-size: 22px; margin: 8px 0 4px; }
-  .res-score { text-align: center; font-size: 15px; color: var(--t2); margin-bottom: 16px; }
-  .res-score strong { font-size: 30px; color: var(--t); font-weight: 700; }
-  .interpret { font-size: 14px; color: var(--t2); }
-  .interpret p { margin: 9px 0; }
-  .interpret strong { color: var(--t); }
-  .dim { background: var(--bg); border-radius: 10px; padding: 11px 13px; margin: 10px 0; }
-  .dim-row { display: flex; justify-content: space-between; font-size: 12.5px; margin-bottom: 6px; }
-  .dim-bar { height: 6px; background: #e2e6ee; border-radius: 999px; overflow: hidden; }
-  .dim-fill { height: 100%; background: var(--p); border-radius: 999px; }
-  .quote-box {
-    background: #fdf6e3; border-radius: 11px; padding: 12px 14px;
-    font-size: 13px; color: #7a5c00; margin: 16px 0 6px; line-height: 1.65;
-  }
-  .disclaim {
-    background: #fff3f3; border: 1px solid #ffd6d6; border-radius: 11px;
-    padding: 12px 14px; font-size: 13px; color: var(--danger);
-    display: flex; gap: 9px; align-items: flex-start; margin: 14px 0;
-  }
-  .disclaim .ic { flex-shrink: 0; }
-
-  /* ============ 综合报告 ============ */
-  .report-head { text-align: center; padding: 24px 0 8px; }
-  .report-head .em { font-size: 46px; }
-  .report-head h2 { font-size: 21px; margin-top: 6px; }
-  .report-head p { font-size: 13px; color: var(--t2); margin-top: 4px; }
-  .sec { background: #fff; border-radius: 14px; padding: 16px; margin-bottom: 12px; box-shadow: 0 1px 8px rgba(31,36,48,.04); }
-  .sec-title { font-size: 15px; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
-  .sec p { font-size: 13.5px; color: var(--t2); margin: 7px 0; }
-  .sec strong { color: var(--t); }
-  .sec.alert { background: #fff8e6; border: 1px solid #ffe6b0; }
-  .sec.alert .sec-title { color: #8a6100; }
-  .sec.safe { background: #DCE9C9; border: 1px solid #A3BC82; }
-  /* 报告层级配色：终极综合报告（深抹茶绿）> 模块汇总报告（浅抹茶绿，低一级） */
-  #s-comp .sec   { background: #DCE9C9; border: 1px solid #B9CF9C; }
-  #s-tabrep .sec { background: #EAF1DA; border: 1px solid #D3E1BE; }
-  #s-comp .sec.alert, #s-tabrep .sec.alert { background: #fff8e6; border-color: #ffe6b0; }
-  #s-comp .sec.safe,  #s-tabrep .sec.safe  { background: #CBE0B6; border-color: #A3BC82; }
-  .mini-tag { display: inline-block; font-size: 11.5px; padding: 2px 8px; border-radius: 999px; background: var(--p-light); color: var(--p-dark); margin-right: 5px; }
-  .author { text-align: center; font-size: 13px; color: var(--t2); margin: 18px 0 8px; }
-  .soft-ad { font-size: 13px; color: var(--t2); background: #fff; border-radius: 12px; padding: 14px; margin-bottom: 12px; line-height: 1.7; }
-
-  /* ============ 模块汇总报告入口 ============ */
-  .tab.full { border-color: #B8C6A2; color: var(--p-dark); font-weight: 600; }
-  .tab-report {
-    background: #fff; border: 2px dashed var(--bd); border-radius: var(--radius);
-    padding: 14px 15px; width: 100%; text-align: left; font-family: inherit; color: inherit;
-    cursor: pointer; display: flex; align-items: center; gap: 12px; margin-top: 2px;
-    transition: transform .1s;
-  }
-  .tab-report:active { transform: scale(.988); }
-  .tab-report.unlocked {
-    background: linear-gradient(135deg, #EEF3E4, #F5F7EB);
-    border: 2px solid var(--p); box-shadow: 0 3px 14px rgba(79,110,247,.14);
-  }
-  .tab-report .tr-icon {
-    width: 40px; height: 40px; flex-shrink: 0; border-radius: 11px;
-    display: flex; align-items: center; justify-content: center; font-size: 19px;
-    background: var(--bg);
-  }
-  .tab-report.unlocked .tr-icon { background: #fff; }
-  .tab-report .tr-main { flex: 1; min-width: 0; }
-  .tab-report .tr-title { font-size: 15px; font-weight: 700; }
-  .tab-report .tr-desc { font-size: 12px; color: var(--t2); margin-top: 2px; }
-  .tab-report .tr-badge {
-    flex-shrink: 0; font-size: 11.5px; padding: 4px 10px; border-radius: 999px;
-    background: var(--bg); color: var(--t3); white-space: nowrap;
-  }
-  .tab-report.unlocked .tr-badge { background: var(--p); color: #fff; font-weight: 600; }
-  .tr-mini-bar { height: 4px; background: #e2e6ee; border-radius: 999px; overflow: hidden; margin-top: 7px; }
-  .tr-mini-fill { height: 100%; background: var(--p); border-radius: 999px; }
-
-  /* 结果页的本模块已解锁提示 */
-  .tab-unlock-note {
-    width: 100%; display: flex; align-items: center; gap: 10px; text-align: left;
-    background: linear-gradient(135deg, #EEF3E4, #F5F7EB); border: 1px solid #D3DEC4;
-    border-radius: 12px; padding: 13px 14px; margin-top: 14px; font-family: inherit;
-    color: var(--t); cursor: pointer;
-  }
-  .tab-unlock-note .ic { flex-shrink: 0; font-size: 20px; }
-  .tab-unlock-note .tx { flex: 1; min-width: 0; }
-  .tab-unlock-note .t1 { font-size: 13.5px; font-weight: 700; }
-  .tab-unlock-note .t2 { font-size: 12px; color: var(--t2); margin-top: 1px; }
-  .tab-unlock-note .go { flex-shrink: 0; font-size: 12.5px; font-weight: 700; color: var(--p); }
-
-  /* 综合报告顶部的模块报告导航 */
-  .chip-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; padding: 2px 0 12px; }
-  .chip {
-    flex: 0 0 auto; font-family: inherit; font-size: 12.5px; padding: 7px 12px;
-    border-radius: 999px; border: 1px solid #D3DEC4; background: #fff;
-    color: var(--p-dark); cursor: default; white-space: nowrap;
-  }
-
-  /* 报告内的数据行 / 缺失清单 */
-  .stat-row {
-    display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
-    padding: 9px 0; border-bottom: 1px dashed var(--bd); font-size: 12.5px;
-  }
-  .stat-row:last-child { border-bottom: none; }
-  .stat-row .sr-name { color: var(--t); flex: 1; min-width: 0; }
-  .stat-row .sr-val { color: var(--t2); text-align: right; flex-shrink: 0; max-width: 62%; }
-  .miss-row {
-    display: flex; justify-content: space-between; gap: 10px;
-    font-size: 13px; padding: 8px 0; border-bottom: 1px dashed var(--bd);
-  }
-  .miss-row:last-child { border-bottom: none; }
-  .miss-row span { color: var(--t3); flex-shrink: 0; }
-/* ===== 访问门禁 ===== */
-.gate {
-  position: fixed;
-  inset: 0;
-  height: 100dvh;      /* 铺满动态视口，规避 iOS 地址栏/键盘导致的上下留白 */
-  overflow-y: auto;    /* 小屏或键盘弹出时卡片可滚动，按钮不会被顶出屏幕 */
-  z-index: 9999;
-  background: var(--bg);
-  display: flex;
-}
-.gate-card {
-  background: #fff;
-  border-radius: 20px;
-  padding: 44px 40px;
-  width: min(340px, calc(100vw - 32px));  /* 极窄屏自适应，避免横向溢出 */
-  margin: auto;                            /* 居中；内容超出时能正常滚到顶部 */
-  text-align: center;
-  box-shadow: 0 12px 40px rgba(31,36,48,.12);
-}
-.gate-emoji { font-size: 44px; }
-.gate-title { font-size: 22px; font-weight: 700; color: var(--t); margin: 12px 0 4px; }
-.gate-sub { font-size: 14px; color: var(--t2); margin-bottom: 22px; }
-#gate-input {
-  width: 100%;
-  padding: 14px;
-  font-size: 16px;
-  border: 1px solid var(--bd);
-  border-radius: 12px;
-  text-align: center;
-  letter-spacing: 2px;
-  outline: none;
-  font-family: inherit;
-}
-#gate-input:focus { border-color: var(--p); }
-.gate-btn {
-  width: 100%;
-  margin-top: 14px;
-  padding: 14px;
-  font-size: 16px;
-  font-weight: 600;
-  color: #fff;
-  background: var(--p);
-  border: none;
-  border-radius: 12px;
-  cursor: pointer;
-}
-.gate-error { margin-top: 12px; font-size: 13px; color: var(--danger); min-height: 18px; }
-/* ===== 微信端报告图片保存 ===== */
-.img-save-mask {
-  position: fixed; inset: 0; z-index: 10000; background: rgba(0,0,0,.72);
-  display: flex; align-items: center; justify-content: center; padding: 18px;
-}
-.img-save-card {
-  background: #fff; border-radius: 16px; padding: 16px; width: 100%;
-  max-width: 420px; max-height: 92vh; overflow: auto; text-align: center;
-}
-.img-save-card img { width: 100%; border-radius: 8px; display: block; }
-.img-save-hint { font-size: 13px; color: #5c6470; margin: 12px 0 6px; line-height: 1.7; }
-.img-save-close { margin-top: 10px; width: 100%; padding: 13px; background: var(--p); color: #fff; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; font-family: inherit; cursor: pointer; }
-</style>
+<link rel="icon" type="image/png" href="site/assets/favicon.png">
+<link rel="stylesheet" href="site/assets/site.css">
+<link rel="stylesheet" href="site/assets/assessment.css">
 </head>
 <body>
-<div class="gate" id="gate">
-  <div class="gate-card">
-    <div class="gate-emoji">🔒</div>
-    <div class="gate-title">ADHD 综合自测</div>
-    <div class="gate-sub">请输入访问密码</div>
-    <input type="password" id="gate-input" placeholder="访问密码" autocomplete="off">
-    <button class="gate-btn" id="gate-btn">进入</button>
-    <div class="gate-error" id="gate-error"></div>
+<a class="skip-link" href="#main">跳到正文</a>
+<header class="site-header">
+  <div class="wrap header-line">
+    <a class="wordmark" href="./"><span class="mark" aria-hidden="true"></span>ADHD Helper</a>
+    <nav aria-label="主导航">
+      <a href="./#library">指南</a>
+      <a href="./test.html" aria-current="page">自测</a>
+      <a href="https://github.com/LukeSONG2000/adhd-helper">GitHub</a>
+    </nav>
   </div>
-</div>
-<div class="app">
+</header>
+<main id="main" class="wrap assessment">
+  <noscript><p class="card">请启用 JavaScript，以便在浏览器里完成作答和生成报告。</p></noscript>
+
 
   <!-- ================= 首页 ================= -->
-  <div class="screen active" id="s-home">
-    <div class="home-head">
-      <h1>ADHD 与神经多样性自测矩阵</h1>
-      <p>14 个独立量表 · 四大模块 · 逐题自动存档</p>
+  <section class="screen" id="s-home">
+    <div class="test-overview">
+      <div class="home-head">
+        <h1 tabindex="-1">ADHD 与神经多样性 <span>自测矩阵</span></h1>
+        <p>选择任一量表开始。答案和进度保存在当前浏览器，本自测仅供自我了解与初筛参考。</p>
+      </div>
+      <div class="home-progress" id="home-progress"></div>
     </div>
-    <div class="home-progress" id="home-progress"></div>
-    <div class="tabs" id="tabs"></div>
-    <div class="entry-list" id="entry-list"></div>
+    <div class="tabs" id="tabs" role="group" aria-label="量表分类"></div>
+    <section class="scale-section" aria-labelledby="scale-heading">
+      <h2 id="scale-heading"></h2>
+      <div class="entry-list" id="entry-list"></div>
+    </section>
     <div id="comp-slot"></div>
-    <button class="btn btn-outline" onclick="showReportImage()" style="margin-top:12px;">结果保存为图片</button>
-    <p class="foot-note">所有量表仅作自我了解与初筛参考，不能替代专业诊断。</p>
-    <button class="btn btn-ghost" onclick="resetTest()" style="margin-top:8px;">重新测试</button>
-  </div>
+    <div class="home-tools">
+      <button class="btn btn-outline" id="export-report" onclick="showReportImage()">导出报告图片</button>
+      <button class="btn btn-ghost" id="clear-results" onclick="resetTest()">清除本机进度</button>
+    </div>
+  </section>
 
   <!-- ================= 引导页 ================= -->
-  <div class="screen" id="s-guide">
+  <section class="screen" id="s-guide">
+    <button class="back-btn screen-back" onclick="showHome()">返回量表目录</button>
     <div class="guide-head">
-      <div class="em" id="g-em">📋</div>
-      <h2 id="g-title"></h2>
+      <div class="em" aria-hidden="true" id="g-em">📋</div>
+      <h2 tabindex="-1" id="g-title"></h2>
     </div>
     <div class="guide-tag" id="g-tag"></div>
     <div class="info-grid" id="g-info"></div>
@@ -361,34 +58,36 @@
     <div class="btn-row">
       <button class="btn btn-primary" id="g-start">开始测试</button>
       <button class="btn btn-ghost" id="g-retest" style="display:none;">重新测试</button>
-      <button class="btn btn-ghost" onclick="showHome()">← 返回首页</button>
     </div>
-  </div>
+  </section>
 
   <!-- ================= 答题页 ================= -->
-  <div class="screen" id="s-quiz">
+  <section class="screen" id="s-quiz">
+    <button class="back-btn screen-back" onclick="openGuide(MODULES.indexOf(curMod))">返回量表说明</button>
     <div class="topbar">
       <div class="progress-row">
         <span id="q-mname"></span>
-        <span>第 <strong id="q-cur">1</strong> 题 / 共 <strong id="q-total">18</strong> 题</span>
+        <span>第 <strong id="q-cur"></strong> / <strong id="q-total"></strong> 题</span>
       </div>
-      <div class="bar"><div class="bar-fill" id="q-bar"></div></div>
+      <progress class="bar" id="q-bar" aria-label="本量表已答题数"></progress>
     </div>
     <div class="card q-card">
-      <div class="q-index" id="q-index"></div>
-      <div class="q-text" id="q-text"></div>
-      <div class="q-hint" id="q-hint" style="display:none"></div>
-      <div class="q-ex" id="q-ex" style="display:none"></div>
-      <div class="options" id="options"></div>
+      <h2 tabindex="-1" class="q-text" id="q-text"></h2>
+      <div class="q-hint" id="q-hint" hidden></div>
+      <div class="q-ex" id="q-ex" hidden></div>
+      <div class="options" id="options" role="radiogroup" aria-labelledby="q-text"></div>
     </div>
-    <div class="back-line"><button class="back-btn" id="q-back" onclick="goBack()">← 上一题</button></div>
-  </div>
+    <div class="quiz-actions">
+      <button class="btn btn-ghost" id="q-back" onclick="goBack()">上一题</button>
+      <button class="btn btn-primary" id="q-next" onclick="advanceQuestion()" disabled>下一题</button>
+    </div>
+  </section>
 
   <!-- ================= 单项结果页 ================= -->
-  <div class="screen" id="s-result">
+  <section class="screen" id="s-result">
     <div class="res-head">
-      <div class="em" id="r-em">📋</div>
-      <h2 id="r-title"></h2>
+      <div class="em" aria-hidden="true" id="r-em">📋</div>
+      <h2 tabindex="-1" id="r-title"></h2>
     </div>
     <div class="res-score" id="r-score"></div>
     <div class="card">
@@ -401,16 +100,16 @@
     </div>
     <div class="btn-row">
       <button class="btn btn-primary" id="r-next">下一个测试</button>
-      <button class="btn btn-outline" onclick="showHome()">返回首页</button>
+      <button class="btn btn-outline" onclick="showHome()">返回量表目录</button>
       <button class="btn btn-ghost" id="r-retry">重新测试</button>
     </div>
-  </div>
+  </section>
 
   <!-- ================= 模块汇总报告 ================= -->
-  <div class="screen" id="s-tabrep">
+  <section class="screen" id="s-tabrep">
     <div class="report-head">
-      <div class="em" id="tr-em">🧭</div>
-      <h2 id="tr-title"></h2>
+      <div class="em" aria-hidden="true" id="tr-em">🧭</div>
+      <h2 tabindex="-1" id="tr-title"></h2>
       <p id="tr-sub"></p>
     </div>
     <div id="tr-body"></div>
@@ -420,47 +119,50 @@
     </div>
     <div class="btn-row">
       <button class="btn btn-primary" id="tr-next-module" style="display:none;">下一个模块测试</button>
-      <button class="btn btn-outline" onclick="showHome()">返回首页</button>
-      <a class="btn-link" id="tr-shop" href="#" target="_blank" rel="noopener">了解《ADHD人生设计指南》自救手册📚</a>
+      <button class="btn btn-outline" onclick="showHome()">返回量表目录</button>
+      <a class="btn btn-outline" href="./#library">阅读 ADHD 人生设计指南</a>
     </div>
-    <button class="btn btn-ghost" id="tr-comp" style="display:none;">查看终极综合报告</button>
-  </div>
+    <button class="btn btn-ghost" id="tr-comp" style="display:none;">查看综合报告</button>
+  </section>
 
   <!-- ================= 综合报告 ================= -->
-  <div class="screen" id="s-comp">
+  <section class="screen" id="s-comp">
     <div class="report-head">
-      <div class="em">🧭</div>
-      <h2>终极综合评估报告</h2>
+      <div class="em" aria-hidden="true">🧭</div>
+      <h2 tabindex="-1">综合评估报告</h2>
       <p id="c-sub"></p>
     </div>
     <div class="chip-row" id="c-tabnav"></div>
     <div id="c-body"></div>
     <div class="author">测试作者：烛火虫</div>
-    <div class="soft-ad" id="c-ad"></div>
-    <a class="btn-link" id="c-shop" href="#" target="_blank" rel="noopener">了解《ADHD人生设计指南》自救手册📚</a>
-    <div class="btn-row"><button class="btn btn-ghost" onclick="showHome()">返回首页</button></div>
-  </div>
+    <a class="btn btn-outline" href="./#library">阅读 ADHD 人生设计指南</a>
+    <div class="btn-row"><button class="btn btn-ghost" onclick="showHome()">返回量表目录</button></div>
+  </section>
 
   <!-- ================= 未解锁 ================= -->
-  <div class="screen" id="s-locked">
+  <section class="screen" id="s-locked">
     <div class="report-head">
-      <div class="em">🔒</div>
-      <h2>综合报告尚未解锁</h2>
+      <div class="em" aria-hidden="true">🔒</div>
+      <h2 tabindex="-1">综合报告尚未解锁</h2>
       <p id="l-sub"></p>
     </div>
     <div class="card" id="l-body"></div>
     <div class="btn-row">
-      <button class="btn btn-primary" id="l-btn" onclick="showHome()">返回首页继续测试</button>
+      <button class="btn btn-primary" id="l-btn" onclick="showHome()">返回量表目录继续测试</button>
     </div>
+  </section>
+</main>
+<footer class="site-footer">
+  <div class="wrap footer-line">
+    <a href="./">ADHD Helper</a>
+    <a href="https://github.com/ZHCstudio/adhd-test">题库与报告来源：ZHCstudio/adhd-test</a>
   </div>
-
-</div>
+</footer>
 
 <script>
 /* =====================================================================
  * 0. 全局配置
  * ===================================================================== */
-const SHOP_URL = "https://www.xiaohongshu.com/shop/6a40c7f440caa60015aebb5c";   // 小红书店铺首页「烛火虫」固定链接（shop/seller_id 为永久店铺ID）
 const STORE_KEY = "nd_matrix_v2";        // localStorage 存档键（v2：计分规范化后的新存档，避免读到旧版计分缓存）
 
 /* 就诊前商业保险提醒：当结果建议去医院诊断时显示 */
@@ -1451,79 +1153,54 @@ function summaryOf(mod, r) {
 /* =====================================================================
  * 5. 首页（Tab + 入口卡片）
  * ===================================================================== */
-let activeTab = state.tab || "core";
+let activeTab = TABS.some(t => t.id === state.tab) ? state.tab : "core";
 
 function renderTabs() {
-  document.getElementById("tabs").innerHTML = TABS.map(t => {
+  const tabs = document.getElementById("tabs");
+  const focusInside = tabs.contains(document.activeElement);
+  tabs.innerHTML = TABS.map(t => {
     const done = tabDoneCount(t.id);
     const all = tabModules(t.id).length;
-    const full = done === all;
-    return `<button class="tab ${t.id === activeTab ? "active" : ""} ${full ? "full" : ""}" onclick="switchTab('${t.id}')">${full ? "✓ " : ""}${t.name} ${done}/${all}</button>`;
+    const current = t.id === activeTab;
+    return `<button type="button" class="tab" aria-pressed="${current}" aria-controls="entry-list" onclick="switchTab('${t.id}')">
+      <span>${t.name}</span><span class="tab-count">${done}/${all}</span>
+    </button>`;
   }).join("");
+  if (focusInside) tabs.querySelector('[aria-pressed="true"]').focus({ preventScroll: true });
 }
 
 function switchTab(id) {
-  activeTab = id; state.tab = id; saveState();
-  renderTabs(); renderEntries();
-  scrollTabsAfterSwitch();
-}
-
-/* 切换 Tab 后：当前选中模块永远完整显示——边缘贴边、中间两端各露半截 */
-function scrollTabsAfterSwitch() {
-  const bar = document.getElementById("tabs");
-  const active = bar.querySelector(".tab.active");
-  const first = bar.firstElementChild;
-  if (!bar || !active || !first) return;
-
-  const tabs = Array.from(bar.children);
-  const idx = tabs.indexOf(active);
-  const n = tabs.length;
-  const maxLeft = bar.scrollWidth - bar.clientWidth;
-
-  let target;
-  if (idx === 0) {
-    target = 0;                                  // 第一个：贴左，完整显示
-  } else if (idx === n - 1) {
-    target = maxLeft;                            // 最后一个：贴右，完整显示
-  } else {
-    target = Math.min(first.offsetWidth / 2, maxLeft);  // 中间：两端各露半截
-  }
-  target = Math.max(0, Math.min(target, maxLeft));
-
-  // 位置没变就不滚动，避免多余晃动
-  if (Math.abs(bar.scrollLeft - target) < 1) return;
-  bar.scrollTo({ left: target, behavior: "smooth" });
+  activeTab = id;
+  state.tab = id;
+  saveState();
+  renderTabs();
+  renderEntries();
 }
 
 function renderEntries() {
-  const list = MODULES.filter(m => m.tab === activeTab);
+  const list = tabModules(activeTab);
+  document.getElementById("scale-heading").textContent = TABS.find(t => t.id === activeTab).name;
   const cards = list.map(m => {
-    const r = state.results[m.id];
-    const idx = MODULES.indexOf(m);
-    const ans = answersOf(m);
-    const started = ans.some(v => v != null);
-    let badge, extra;
-    if (r) {
-      badge = `<span class="badge done">✓ 已完成</span>`;
-      extra = `<div class="entry-summary">${escapeHtml(summaryOf(m, r))} · <span class="view-link" onclick="event.stopPropagation();viewResult('${m.id}')">查看结果 →</span></div>`;
-    } else if (started) {
-      badge = `<span class="badge doing">进行中</span>`;
-      extra = `<div class="entry-note">已答 ${answeredCount(m)}/${m.items.length} 题，点击继续</div>`;
-    } else {
-      badge = `<span class="badge">未开始</span>`;
-      extra = `<div class="entry-note">${m.note}</div>`;
-    }
-    return `<button class="entry" onclick="openGuide(${idx})">
+    const result = currentResult(m);
+    const index = MODULES.indexOf(m);
+    const count = answeredCount(m);
+    const badge = result ? '<span class="badge done">已完成</span>'
+      : count > 0 ? '<span class="badge doing">进行中</span>' : "";
+    const detail = result ? escapeHtml(summaryOf(m, result))
+      : count > 0 ? `已答 ${count} / ${m.items.length} 题` : `${m.items.length} 题 · 约 ${m.time} 分钟`;
+    const action = result ? "量表说明" : count > 0 ? "继续作答" : "查看量表";
+    return `<article class="entry">
       <div class="entry-top">
-        <div class="entry-icon" style="background:${m.color}">${m.icon}</div>
-        <div class="entry-main">
-          <div class="entry-title">${m.name}</div>
-          <div class="entry-desc">${m.desc}</div>
-        </div>
-        <div class="entry-right">${badge}</div>
+        <h3 class="entry-title">${m.name}</h3>
+        ${badge}
       </div>
-      ${extra}
-    </button>`;
+      <p class="entry-desc">${m.desc}</p>
+      <p class="entry-summary">${detail}</p>
+      <div class="entry-actions">
+        ${result ? `<button class="btn btn-outline" type="button" onclick="viewResult('${m.id}')">查看结果<span class="visually-hidden"> · ${m.name}</span></button>` : ""}
+        <button class="btn btn-ghost" type="button" onclick="openGuide(${index})">${action}<span class="visually-hidden"> · ${m.name}</span></button>
+      </div>
+    </article>`;
   }).join("");
 
   document.getElementById("entry-list").innerHTML = cards + tabReportCard(activeTab);
@@ -1561,8 +1238,8 @@ function renderHomeProgress() {
   const done = MODULES.filter(m => state.results[m.id]).length;
   const total = MODULES.length;
   document.getElementById("home-progress").innerHTML = `
-    <div class="progress-row"><span>整体进度</span><span><strong>已完成 ${done} / ${total}</strong></span></div>
-    <div class="bar"><div class="bar-fill" style="width:${done / total * 100}%"></div></div>`;
+    <div class="progress-row"><span>整体进度</span><strong>${done} / ${total} 项</strong></div>
+    <progress class="bar" aria-label="已完成量表数" max="${total}" value="${done}"></progress>`;
 }
 
 function renderCompSlot() {
@@ -1575,7 +1252,7 @@ function renderCompSlot() {
       <div class="entry-top">
         <div class="entry-icon" style="background:rgba(255,255,255,.2)">🧭</div>
         <div class="entry-main">
-          <div class="entry-title">查看终极综合报告</div>
+          <div class="entry-title">查看综合报告</div>
           <div class="entry-desc">14 项全部完成 · 模块报告 ${tabOk}/4 · 查看整体画像与建议</div>
         </div>
         <div class="entry-right"><span class="badge">可查看 →</span></div>
@@ -1586,7 +1263,7 @@ function renderCompSlot() {
       <div class="entry-top">
         <div class="entry-icon" style="background:rgba(255,255,255,.2)">🔒</div>
         <div class="entry-main">
-          <div class="entry-title">终极综合报告</div>
+          <div class="entry-title">综合报告</div>
           <div class="entry-desc">完成全部 14 项后解锁 · 模块报告已解锁 ${tabOk}/4</div>
         </div>
         <div class="entry-right"><span class="badge">${done}/${total}</span></div>
@@ -1595,9 +1272,15 @@ function renderCompSlot() {
   }
 }
 
-function showHome() {
-  renderHomeProgress(); renderTabs(); renderEntries(); renderCompSlot();
-  switchScreen("s-home");
+function showHome(moveFocus = true) {
+  renderHomeProgress();
+  renderTabs();
+  renderEntries();
+  renderCompSlot();
+  const hasResults = MODULES.some(m => state.results[m.id]);
+  document.getElementById("export-report").hidden = !hasResults;
+  document.getElementById("clear-results").hidden = !hasResults && !MODULES.some(m => answeredCount(m));
+  switchScreen("s-home", moveFocus);
 }
 
 /* =====================================================================
@@ -1606,10 +1289,10 @@ function showHome() {
 let curMod = null;
 let curQ = 0;
 
-function switchScreen(id) {
-  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
-  document.getElementById(id).classList.add("active");
+function switchScreen(id, moveFocus = true) {
+  document.querySelectorAll(".screen").forEach(screen => screen.classList.toggle("active", screen.id === id));
   window.scrollTo(0, 0);
+  if (moveFocus) document.querySelector(`#${id} h1, #${id} h2`).focus({ preventScroll: true });
 }
 
 function openGuide(idx) {
@@ -1626,8 +1309,9 @@ function openGuide(idx) {
 
   const btn = document.getElementById("g-start");
   const partial = !state.results[curMod.id] && answeredCount(curMod) > 0;
-  btn.textContent = partial ? `继续答题（第 ${firstUnanswered(curMod) + 1} 题）` : "开始测试";
-  btn.onclick = () => startQuiz(partial);
+  const result = currentResult(curMod);
+  btn.textContent = result ? "查看结果" : partial ? `继续答题（第 ${firstUnanswered(curMod) + 1} 题）` : "开始测试";
+  btn.onclick = result ? () => viewResult(curMod.id) : () => startQuiz(partial);
 
   /* 单个测试「重新测试」：仅在本测试已有进度或结果时显示，清空后从头开始 */
   const retest = document.getElementById("g-retest");
@@ -1657,56 +1341,83 @@ function renderQuestion() {
   document.getElementById("q-mname").textContent = mod.name;
   document.getElementById("q-cur").textContent = curQ + 1;
   document.getElementById("q-total").textContent = total;
-  document.getElementById("q-bar").style.width = (curQ / total * 100) + "%";
-  document.getElementById("q-index").textContent = `第 ${curQ + 1} 题 / 共 ${total} 题`;
+  const progress = document.getElementById("q-bar");
+  progress.max = total;
+  progress.value = answeredCount(mod);
 
   const text = mod.items[curQ];
   document.getElementById("q-text").textContent = typeof text === "string" ? text : text.q;
 
   const hint = document.getElementById("q-hint");
   if (mod.id === "wurs" && curQ === 0) {
-    hint.style.display = "block";
+    hint.hidden = false;
     hint.textContent = "💡 请回想你 8-12 岁时的状态，而不是现在。";
   } else if (typeof text === "object" && text.hint) {
-    hint.style.display = "block"; hint.textContent = "💡 " + text.hint;
-  } else { hint.style.display = "none"; }
+    hint.hidden = false; hint.textContent = "💡 " + text.hint;
+  } else { hint.hidden = true; }
 
   const ex = document.getElementById("q-ex");
   if (typeof text === "object" && text.ex) {
-    ex.style.display = "block"; ex.textContent = "例：" + text.ex;
-  } else { ex.style.display = "none"; }
+    ex.hidden = false; ex.textContent = "例：" + text.ex;
+  } else { ex.hidden = true; }
 
   const a = answersOf(mod);
   const wrap = document.getElementById("options");
   wrap.innerHTML = "";
   const opts = (typeof text === "object" && text.opts) ? text.opts : mod.opts;
-  opts.forEach(([label, v], i) => {
-    const b = document.createElement("button");
-    b.className = "opt" + (a[curQ] === v ? " picked" : "");
-    b.innerHTML = `<span class="dot"></span><span>${label}</span>`;
-    b.onclick = () => pick(v, b);
-    wrap.appendChild(b);
+  opts.forEach(([text, value]) => {
+    const label = document.createElement("label");
+    label.className = "opt";
+    const input = document.createElement("input");
+    input.type = "radio";
+    input.name = "answer";
+    input.value = value;
+    input.checked = a[curQ] === value;
+    input.addEventListener("change", () => selectAnswer(value));
+    const caption = document.createElement("span");
+    caption.textContent = text;
+    label.append(input, caption);
+    wrap.appendChild(label);
   });
-
-  document.getElementById("q-back").style.visibility = curQ === 0 ? "hidden" : "visible";
+  document.getElementById("q-back").disabled = curQ === 0;
+  const next = document.getElementById("q-next");
+  next.disabled = a[curQ] == null;
+  next.textContent = curQ === total - 1 ? "查看结果" : "下一题";
 }
 
-function pick(value, btn) {
-  const mod = curMod;
-  answersOf(mod)[curQ] = value;
-  saveState();                       // 每题自动存档
-  document.querySelectorAll(".opt").forEach(b => b.classList.remove("picked"));
-  btn.classList.add("picked");
-  setTimeout(() => {
-    if (curQ < mod.items.length - 1) {
-      curQ++; renderQuestion();
-    } else {
+function selectAnswer(value) {
+  answersOf(curMod)[curQ] = value;
+  saveState();
+  document.getElementById("q-bar").value = answeredCount(curMod);
+  document.getElementById("q-next").disabled = false;
+}
+
+function advanceQuestion() {
+  const answers = answersOf(curMod);
+  if (answers[curQ] == null) return;
+  if (curQ === curMod.items.length - 1) {
+    const unanswered = answers.findIndex(value => value == null);
+    if (unanswered < 0) {
       finishQuiz();
+      return;
     }
-  }, 200);
+    curQ = unanswered;
+  } else {
+    curQ += 1;
+  }
+  showQuestion();
 }
 
-function goBack() { if (curQ > 0) { curQ--; renderQuestion(); } }
+function goBack() {
+  if (curQ === 0) return;
+  curQ -= 1;
+  showQuestion();
+}
+
+function showQuestion() {
+  renderQuestion();
+  document.getElementById("q-text").focus();
+}
 
 function finishQuiz() {
   const mod = curMod;
@@ -2105,7 +1816,6 @@ function openTabReport(tabId) {
   document.getElementById("tr-title").textContent = `${t.name}汇总报告`;
   document.getElementById("tr-sub").textContent = rep.sub;
   document.getElementById("tr-body").innerHTML = rep.html;
-  document.getElementById("tr-shop").href = SHOP_URL;
 
   /* 记录已查看，与解锁状态一起写入 localStorage */
   const e = state.tabReports[tabId] || (state.tabReports[tabId] = { unlocked: true, time: Date.now() });
@@ -2179,8 +1889,8 @@ function compLocked() {
   const tabOk = TABS.filter(t => tabUnlocked(t.id)).length;
   lockPage({
     sub: `当前进度：${done} / ${MODULES.length} · 模块报告 ${tabOk}/4`,
-    body: `<p class="small muted" style="margin-bottom:12px;">终极综合报告需要完成全部 14 项。如果只想先看某一组，可以回到首页查看已解锁的<strong>模块汇总报告</strong>：</p>${rows}`,
-    btn: "返回首页继续测试",
+    body: `<p class="small muted" style="margin-bottom:12px;">综合报告需要完成全部 14 项。如果只想先看某一组，可以回到首页查看已解锁的<strong>模块汇总报告</strong>：</p>${rows}`,
+    btn: "返回量表目录继续测试",
     action: () => showHome()
   });
 }
@@ -2284,9 +1994,6 @@ function showComprehensive() {
   document.getElementById("c-sub").textContent =
     `${adhdTendency.text}${audhd ? " · AuDHD 重叠可能" : ""}`;
   document.getElementById("c-body").innerHTML = h;
-  document.getElementById("c-ad").textContent =
-    "看到自己真实的特质只是改变的起点，如何带着这些特质过好每一天才是真正的课题。如果你希望有一份随时能翻阅的实操指南，这本《ADHD人生设计指南》里，有我这些年摸索出的底层框架与应对方法。";
-  document.getElementById("c-shop").href = SHOP_URL;
   switchScreen("s-comp");
 }
 
@@ -2415,17 +2122,19 @@ function downloadReportImage() {
 
 function showReportImage() {
   const dataUrl = downloadReportImage();
-  document.querySelectorAll(".img-save-mask").forEach(e => e.remove());
-  const mask = document.createElement("div");
-  mask.className = "img-save-mask";
-  mask.innerHTML = `
-    <div class="img-save-card">
-      <img src="${dataUrl}" alt="测试报告">
-      <p class="img-save-hint">长按上方图片，选择「保存图片」即可保存报告。</p>
-      <button class="img-save-close" onclick="this.closest('.img-save-mask').remove()">关闭</button>
-    </div>`;
-  mask.addEventListener("click", e => { if (e.target === mask) mask.remove(); });
-  document.body.appendChild(mask);
+  const dialog = document.createElement("dialog");
+  dialog.className = "img-save-card";
+  dialog.setAttribute("aria-labelledby", "report-image-title");
+  dialog.innerHTML = `
+    <div class="dialog-header">
+      <h2 id="report-image-title">报告图片</h2>
+      <form method="dialog"><button class="btn btn-ghost" autofocus>关闭</button></form>
+    </div>
+    <img src="${dataUrl}" alt="测试报告预览">
+    <a class="btn btn-primary" href="${dataUrl}" download="ADHD-Helper-报告.png">下载图片</a>`;
+  dialog.addEventListener("close", () => dialog.remove(), { once: true });
+  document.body.appendChild(dialog);
+  dialog.showModal();
 }
 
 /* ===== 重新测试：清除所有结果 ===== */
@@ -2447,28 +2156,10 @@ function escapeHtml(s) {
   return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-/* ===== 访问门禁 ===== */
-const GATE_PASSWORD = "ZHC-8391";
-function gateCheck() {
-  const input = document.getElementById("gate-input");
-  const err = document.getElementById("gate-error");
-  if (input.value.trim() === GATE_PASSWORD) {
-    document.getElementById("gate").style.display = "none";
-  } else {
-    err.textContent = "密码错误，请重试";
-    input.value = "";
-    input.focus();
-  }
-}
-document.getElementById("gate-btn").addEventListener("click", gateCheck);
-document.getElementById("gate-input").addEventListener("keydown", (e) => {
-  if (e.key === "Enter") gateCheck();
-});
-
 /* 首次加载：校准各 Tab 模块报告状态并恢复进度 */
 syncTabReports();
 saveState();
-showHome();
+showHome(false);
 </script>
 </body>
 </html>
