@@ -125,7 +125,7 @@ def build_home(notes):
   <main id="main" class="wrap">
     <section class="hero" aria-labelledby="page-title">
       <div class="hero-content">
-        <h1 id="page-title">ADHD 人生设计指南</h1>
+        <h1 id="page-title">ADHD <span>人生设计指南</span></h1>
         <p>按当下的需要找一篇。这里有关于睡眠、专注、情绪、工作和关系的指南，也有可以直接使用的清单和记录表。</p>
         <div class="hero-actions">
           <a class="button" href="#library">浏览指南</a>
