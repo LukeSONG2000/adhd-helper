@@ -146,8 +146,8 @@ def build_library(notes):
 
     <section id="downloads" class="downloads" aria-labelledby="download-title">
       <h2 id="download-title">下载 Markdown</h2>
-      <a href="downloads/adhd-guide.md" download="{escape(FULL_GUIDE.name)}">全文 Markdown</a>
-      <a href="downloads/adhd-guide-obsidian.zip" download="ADHD人生设计指南 - Obsidian.zip">Obsidian 分篇笔记</a>
+      <a class="btn btn-outline" href="downloads/adhd-guide.md" download="{escape(FULL_GUIDE.name)}">全文 Markdown</a>
+      <a class="btn btn-outline" href="downloads/adhd-guide-obsidian.zip" download="ADHD人生设计指南 - Obsidian.zip">Obsidian 分篇笔记</a>
     </section>
   </main>
   <script src="assets/search.js" defer></script>
