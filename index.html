@@ -82,7 +82,7 @@ openLegacyGuideSection();
     <div class="card q-card">
       <h2 tabindex="-1" class="q-text" id="q-text"></h2>
       <div class="q-hint" id="q-hint" hidden></div>
-      <div class="options" id="options" role="radiogroup" aria-labelledby="q-text"></div>
+      <div class="options" id="options" role="group" aria-labelledby="q-text"></div>
       <details class="quiet-details" id="q-example" hidden>
         <summary>看例子</summary>
         <p id="q-ex"></p>
@@ -90,7 +90,6 @@ openLegacyGuideSection();
     </div>
     <div class="quiz-actions">
       <button class="btn btn-ghost" id="q-back" onclick="goBack()">上一题</button>
-      <button class="btn btn-primary" id="q-next" onclick="advanceQuestion()" disabled>下一题</button>
     </div>
   </section>
 
@@ -112,6 +111,7 @@ openLegacyGuideSection();
     <details class="quiet-details" id="r-more">
       <summary>更多操作</summary>
       <div class="quiet-actions">
+        <button class="btn btn-ghost" id="r-edit" onclick="startQuiz(true)" hidden>修改答案</button>
         <button class="btn btn-ghost" onclick="openGuide(MODULES.indexOf(curMod))">量表说明</button>
         <button class="btn btn-ghost" onclick="retestCurrentScale()">重新测试</button>
       </div>
@@ -1291,45 +1291,27 @@ function renderQuestion() {
   wrap.innerHTML = "";
   const opts = (typeof text === "object" && text.opts) ? text.opts : mod.opts;
   opts.forEach(([text, value]) => {
-    const label = document.createElement("label");
-    label.className = "opt";
-    const input = document.createElement("input");
-    input.type = "radio";
-    input.name = "answer";
-    input.value = value;
-    input.checked = a[curQ] === value;
-    input.addEventListener("change", () => selectAnswer(value));
-    const caption = document.createElement("span");
-    caption.textContent = text;
-    label.append(input, caption);
-    wrap.appendChild(label);
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "opt";
+    button.textContent = text;
+    if (a[curQ] === value) button.setAttribute("aria-current", "true");
+    button.addEventListener("click", () => selectAnswer(value));
+    wrap.appendChild(button);
   });
   document.getElementById("q-back").disabled = curQ === 0;
-  const next = document.getElementById("q-next");
-  next.disabled = a[curQ] == null;
-  next.textContent = curQ === total - 1 ? "查看结果" : "下一题";
 }
 
 function selectAnswer(value) {
-  answersOf(curMod)[curQ] = value;
-  saveState();
-  document.getElementById("q-bar").value = answeredCount(curMod);
-  document.getElementById("q-next").disabled = false;
-}
-
-function advanceQuestion() {
   const answers = answersOf(curMod);
-  if (answers[curQ] == null) return;
-  if (curQ === curMod.items.length - 1) {
-    const unanswered = answers.findIndex(value => value == null);
-    if (unanswered < 0) {
-      finishQuiz();
-      return;
-    }
-    curQ = unanswered;
-  } else {
-    curQ += 1;
+  answers[curQ] = value;
+  const unanswered = answers.findIndex(answer => answer == null);
+  if (unanswered < 0) {
+    finishQuiz();
+    return;
   }
+  saveState();
+  curQ = unanswered;
   showQuestion();
 }
 
@@ -1380,6 +1362,7 @@ function renderResult(mod, r) {
     : `得分 ${r.score} / ${r.max}`;
   document.getElementById("r-detail").open = false;
   document.getElementById("r-more").open = false;
+  document.getElementById("r-edit").hidden = answeredCount(mod) !== mod.items.length;
   showReportContent("r-interpret", "r-safety", mod.interpret(r));
 
   if (tabUnlocked(mod.tab)) {

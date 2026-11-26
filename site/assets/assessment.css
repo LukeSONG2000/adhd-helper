@@ -301,22 +301,28 @@
   border: 1px solid var(--line);
   border-radius: var(--radius-control);
   padding: .55rem .75rem;
+  color: inherit;
+  font: inherit;
+  text-align: start;
   cursor: pointer;
 }
-.assessment .opt:hover { background: var(--subtle); }
-.assessment .opt:has(:checked) { background: var(--accent-surface); border-color: var(--link); }
-.assessment .opt:has(:focus-visible) { outline: 2px solid var(--focus); outline-offset: 2px; }
-.assessment .opt:has(:focus-visible) input:focus-visible { outline: none; }
-.assessment .opt input {
-  accent-color: var(--link);
+.assessment .opt:is(:hover, :active) { background: var(--subtle); }
+.assessment .opt[aria-current] { background: var(--accent-surface); border-color: var(--link); }
+.assessment .opt:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.assessment .opt::before {
+  content: "";
   flex: none;
   inline-size: 1.12rem;
   block-size: 1.12rem;
-  margin: 0;
+  border: 1px solid var(--muted);
+  border-radius: 50%;
 }
-.assessment .quiz-actions { justify-content: space-between; }
+.assessment .opt[aria-current]::before {
+  border-color: var(--link);
+  background: var(--link);
+  box-shadow: inset 0 0 0 .22rem var(--accent-surface);
+}
 .assessment .quiz-actions .btn-ghost:disabled { visibility: hidden; }
-.assessment .quiz-actions .btn-primary { min-inline-size: 7rem; }
 
 .assessment .report-section {
   border-block-start: 1px solid var(--line);
