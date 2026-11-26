@@ -47,8 +47,11 @@ openLegacyGuideSection();
       <div id="comp-slot"></div>
     </div>
     <div class="home-tools">
-      <button class="btn btn-outline" id="export-report" onclick="showReportImage()">导出报告图片</button>
-      <button class="btn btn-ghost" id="clear-results" onclick="resetTest()">清除本机进度</button>
+      <button class="btn btn-ghost" id="export-report" onclick="showReportImage()">导出报告图片</button>
+      <details class="quiet-details" id="home-more" hidden>
+        <summary>更多操作</summary>
+        <button class="btn btn-ghost" onclick="resetTest()">清除本机进度</button>
+      </details>
     </div>
     <p class="home-note">进度仅保存在当前浏览器。自测结果仅供初筛参考。</p>
   </section>
@@ -56,16 +59,13 @@ openLegacyGuideSection();
   <!-- ================= 引导页 ================= -->
   <section class="screen" id="s-guide">
     <button class="back-btn screen-back" onclick="showHome()">返回量表目录</button>
-    <div class="guide-head">
-      <div class="em" aria-hidden="true" id="g-em">📋</div>
-      <h2 tabindex="-1" id="g-title"></h2>
-    </div>
-    <div class="guide-tag" id="g-tag"></div>
-    <div class="info-grid" id="g-info"></div>
-    <div class="card guide-body" id="g-body"></div>
+    <h2 class="step-title" tabindex="-1" id="g-title"></h2>
+    <p id="g-rule" class="answer-rule"><span class="rule-label">作答范围</span> <strong id="g-focus"></strong></p>
+    <p class="quiet-note" id="g-method" hidden></p>
+    <p class="quiet-note" id="g-notice" hidden></p>
     <div class="btn-row">
-      <button class="btn btn-primary" id="g-start">开始测试</button>
-      <button class="btn btn-ghost" id="g-retest" style="display:none;">重新测试</button>
+      <button class="btn btn-primary" id="g-start" aria-describedby="g-rule">开始测试</button>
+      <button class="btn btn-ghost" id="g-retest" onclick="retestCurrentScale()" hidden>重新测试</button>
     </div>
   </section>
 
@@ -74,16 +74,19 @@ openLegacyGuideSection();
     <button class="back-btn screen-back" onclick="openGuide(MODULES.indexOf(curMod))">返回量表说明</button>
     <div class="topbar">
       <div class="progress-row">
-        <span id="q-mname"></span>
-        <span>第 <strong id="q-cur"></strong> / <strong id="q-total"></strong> 题</span>
+        <span id="q-scope"></span>
+        <span id="q-position"></span>
       </div>
       <progress class="bar" id="q-bar" aria-label="本量表已答题数"></progress>
     </div>
     <div class="card q-card">
       <h2 tabindex="-1" class="q-text" id="q-text"></h2>
       <div class="q-hint" id="q-hint" hidden></div>
-      <div class="q-ex" id="q-ex" hidden></div>
       <div class="options" id="options" role="radiogroup" aria-labelledby="q-text"></div>
+      <details class="quiet-details" id="q-example" hidden>
+        <summary>看例子</summary>
+        <p id="q-ex"></p>
+      </details>
     </div>
     <div class="quiz-actions">
       <button class="btn btn-ghost" id="q-back" onclick="goBack()">上一题</button>
@@ -93,72 +96,69 @@ openLegacyGuideSection();
 
   <!-- ================= 单项结果页 ================= -->
   <section class="screen" id="s-result">
-    <div class="res-head">
-      <div class="em" aria-hidden="true" id="r-em">📋</div>
-      <h2 tabindex="-1" id="r-title"></h2>
-    </div>
-    <div class="res-score" id="r-score"></div>
-    <div class="card">
-      <div class="interpret" id="r-interpret"></div>
-    </div>
-    <div id="r-tabnote"></div>
-    <div class="disclaim">
-      <div class="ic">⚠️</div>
-      <div>本测试仅作初筛参考，不能替代专业医生的临床诊断。</div>
-    </div>
+    <p class="quiet-note result-scale" id="r-scale"></p>
+    <h2 class="step-title" tabindex="-1" id="r-title"></h2>
+    <p class="result-score" id="r-score"></p>
+    <div class="safety-summary" id="r-safety" hidden></div>
+    <p class="quiet-note">结果仅供初筛参考，不能替代临床诊断。</p>
     <div class="btn-row">
       <button class="btn btn-primary" id="r-next">下一个测试</button>
-      <button class="btn btn-outline" onclick="showHome()">返回量表目录</button>
-      <button class="btn btn-ghost" onclick="openGuide(MODULES.indexOf(curMod))">量表说明</button>
-      <button class="btn btn-ghost" id="r-retry">重新测试</button>
+      <button class="btn btn-ghost" id="r-home" onclick="showHome()">返回量表目录</button>
     </div>
+    <details class="report-section" id="r-detail">
+      <summary>结果解读</summary>
+      <div class="sec-body interpret" id="r-interpret"></div>
+    </details>
+    <details class="quiet-details" id="r-more">
+      <summary>更多操作</summary>
+      <div class="quiet-actions">
+        <button class="btn btn-ghost" onclick="openGuide(MODULES.indexOf(curMod))">量表说明</button>
+        <button class="btn btn-ghost" onclick="retestCurrentScale()">重新测试</button>
+      </div>
+    </details>
   </section>
 
   <!-- ================= 模块汇总报告 ================= -->
   <section class="screen" id="s-tabrep">
-    <div class="report-head">
-      <div class="em" aria-hidden="true" id="tr-em">🧭</div>
-      <h2 tabindex="-1" id="tr-title"></h2>
-      <p id="tr-sub"></p>
-    </div>
-    <div id="tr-body"></div>
-    <div class="disclaim">
-      <div class="ic">⚠️</div>
-      <div>本报告基于你在本模块的作答自动生成，仅作自我了解与初筛参考，不能替代专业医生的临床诊断。</div>
-    </div>
+    <h2 class="step-title" tabindex="-1" id="tr-title"></h2>
+    <p class="report-overview" id="tr-sub"></p>
+    <div class="safety-summary" id="tr-safety" hidden></div>
+    <p class="quiet-note">报告仅供初筛参考，不能替代临床诊断。</p>
     <div class="btn-row">
-      <button class="btn btn-primary" id="tr-next-module" style="display:none;">下一个模块测试</button>
-      <button class="btn btn-outline" onclick="showHome()">返回量表目录</button>
-      <a class="btn btn-outline" href="./guide.html">阅读 ADHD 人生设计指南</a>
+      <button class="btn btn-primary" id="tr-next-module">下一个模块测试</button>
+      <button class="btn btn-ghost" id="tr-home" onclick="showHome()">返回量表目录</button>
     </div>
-    <button class="btn btn-ghost" id="tr-comp" style="display:none;">查看综合报告</button>
+    <div class="report-sections" id="tr-body"></div>
+    <a class="quiet-link" href="./guide.html">阅读指南</a>
   </section>
 
   <!-- ================= 综合报告 ================= -->
   <section class="screen" id="s-comp">
-    <div class="report-head">
-      <div class="em" aria-hidden="true">🧭</div>
-      <h2 tabindex="-1">综合评估报告</h2>
-      <p id="c-sub"></p>
+    <h2 class="step-title" tabindex="-1">综合评估报告</h2>
+    <p class="report-overview" id="c-sub"></p>
+    <div class="safety-summary" id="c-safety" hidden></div>
+    <p class="quiet-note">报告仅供初筛参考，不能替代临床诊断。</p>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="showReportImage()">导出报告图片</button>
+      <button class="btn btn-ghost" onclick="showHome()">返回量表目录</button>
     </div>
-    <div class="chip-row" id="c-tabnav"></div>
-    <div id="c-body"></div>
-    <div class="author">测试作者：烛火虫</div>
-    <a class="btn btn-outline" href="./guide.html">阅读 ADHD 人生设计指南</a>
-    <div class="btn-row"><button class="btn btn-ghost" onclick="showHome()">返回量表目录</button></div>
+    <div class="report-sections" id="c-body"></div>
+    <a class="quiet-link" href="./guide.html">阅读指南</a>
+    <p class="author">测试作者：烛火虫</p>
   </section>
 
   <!-- ================= 未解锁 ================= -->
   <section class="screen" id="s-locked">
-    <div class="report-head">
-      <div class="em" aria-hidden="true">🔒</div>
-      <h2 tabindex="-1">综合报告尚未解锁</h2>
-      <p id="l-sub"></p>
-    </div>
-    <div class="card" id="l-body"></div>
+    <h2 class="step-title" tabindex="-1" id="l-title"></h2>
+    <p class="report-overview" id="l-sub"></p>
     <div class="btn-row">
-      <button class="btn btn-primary" id="l-btn" onclick="showHome()">返回量表目录继续测试</button>
+      <button class="btn btn-primary" id="l-btn">继续测试</button>
+      <button class="btn btn-ghost" onclick="showHome()">返回量表目录</button>
     </div>
+    <details class="report-section" id="l-detail">
+      <summary>未完成的量表</summary>
+      <ul class="sec-body pending-list" id="l-body"></ul>
+    </details>
   </section>
 </main>
 <footer class="site-footer">
@@ -177,7 +177,7 @@ const STORE_KEY = "nd_matrix_v2";        // localStorage 存档键（v2：计分
 /* 就诊前商业保险提醒：当结果建议去医院诊断时显示 */
 const INSURANCE_TIP = `<p class="small" style="margin:6px 0 0;color:var(--t2);">💡 就诊前提醒：如你近期计划购买商业健康险或重疾险，建议先完成投保再就诊。因为一旦留下精神类疾病（如 ADHD）的确诊或就诊记录，可能影响后续核保与承保。</p>`;
 /* 报告结尾的就诊前保险小提醒 */
-const INSURANCE_CLOSE = `<div class="sec safe"><div class="sec-title">💡 就诊前小提醒</div><p>如你近期有就医计划，建议先配置好商业健康险或重疾险再就诊；因为一旦留下精神类疾病（如 ADHD）的确诊或就诊记录，可能影响后续投保与核保。</p></div>`;
+const INSURANCE_CLOSE = rsec("就诊前小提醒", `<p>如你近期有就医计划，建议先配置好商业健康险或重疾险再就诊；因为一旦留下精神类疾病（如 ADHD）的确诊或就诊记录，可能影响后续投保与核保。</p>`);
 
 const TABS = [
   { id: "core",     name: "核心筛查" },
@@ -488,7 +488,6 @@ const MODULES = [
     id: "asrs", tab: "core", icon: "⚡", color: "#EEF3E4",
     name: "ASRS 成人 ADHD 自评",
     desc: "评估近 6 个月的注意力与多动冲动表现",
-    note: "近 6 个月 · 18 题 · 约 5 分钟",
     time: "5", items: ASRS_ITEMS, opts: O.f5,
     detail(a) {
       const iaIdx = [0,1,2,3,4,5,13,14,15,16], hiIdx = [6,7,8,9,10,11,12,17];
@@ -524,17 +523,13 @@ const MODULES = [
     },
     guide: {
       title: "ASRS 成人 ADHD 自评量表",
-      tag: "模块一 · 核心筛查",
-      body: `<p>ASRS 是国际上最常用的成人 ADHD 初筛量表。它评估你<strong>近 6 个月</strong>的状态。</p>
-        <div class="guide-point"><span class="ic">📌</span><span>请按<strong>最近半年</strong>的真实频率作答，不要按某一天的状态判断。</span></div>
-        <div class="guide-point"><span class="ic">💡</span><span>凭第一直觉选择即可，不必在某一题上反复斟酌。</span></div>`
+      focus: "最近半年"
     }
   },
   {
     id: "wurs", tab: "core", icon: "🕰️", color: "#fef6ee",
     name: "WURS 童年回溯",
     desc: "以成年人视角，回想 8-12 岁时的自己",
-    note: "回想 8-12 岁 · 25 题 · 约 4 分钟",
     time: "4", items: WURS_ITEMS, opts: O.s5,
     detail(a) { return {}; },
     conclude(r) {
@@ -558,17 +553,13 @@ const MODULES = [
     },
     guide: {
       title: "WURS 童年回溯量表",
-      tag: "模块一 · 核心筛查",
-      body: `<p>本测试以<strong>成年人</strong>的身份，回看你 <strong>8-12 岁</strong>（小学阶段）的状态。它不是给儿童做的，而是成年人的回溯评估。</p>
-        <div class="guide-point warn"><span class="ic">💡</span><span>回溯童年可能勾起一些回忆，请先调整好心态。答案没有对错，按印象作答即可。</span></div>
-        <div class="guide-point"><span class="ic">💡</span><span>若记忆模糊，可请家人帮你印证，按整体印象作答即可。</span></div>`
+      focus: "自己 8–12 岁时"
     }
   },
   {
     id: "dsm", tab: "core", icon: "📋", color: "#eefef4",
     name: "DSM-5 症状核对",
     desc: "9 条注意力 + 9 条多动冲动，逐条勾选",
-    note: "对照日常表现，勾选符合你的情况",
     time: "3", items: DSM_ATT_ITEMS.concat(DSM_HYP_ITEMS), opts: O.yn,
     detail(a) {
       return { att: a.slice(0,9).filter(v => v === 1).length,
@@ -605,17 +596,13 @@ const MODULES = [
     },
     guide: {
       title: "DSM-5 症状核对清单",
-      tag: "模块一 · 核心筛查",
-      body: `<p>以下 18 个条目，前 9 条与<strong>注意力</strong>有关，后 9 条与<strong>多动和冲动</strong>有关。</p>
-        <div class="guide-point"><span class="ic">📌</span><span><strong>对照日常表现</strong>，勾选符合你的情况。前提是经常如此，而不是偶发。</span></div>
-        <div class="guide-point warn"><span class="ic">💡</span><span>请按<strong>第一反应</strong>作答，不要反复权衡，也不要考虑别人会怎么看。</span></div>`
+      focus: "日常经常出现的情况"
     }
   },
   {
     id: "aq", tab: "core", icon: "🧩", color: "#f3f0ff",
     name: "AQ-Short 孤独谱系特质",
     desc: "评估孤独谱系相关特质",
-    note: "28 题 · 约 4 分钟 · 4 级",
     time: "4", items: AQ_ITEMS, opts: O.aq4, rev: AQ_REV,
     detail(a) { return {}; },
     conclude(r) {
@@ -638,10 +625,7 @@ const MODULES = [
     },
     guide: {
       title: "AQ-Short 孤独谱系特质筛查",
-      tag: "模块一 · 核心筛查",
-      body: `<p>这 28 道题覆盖社交兴趣、沟通方式、细节关注、注意力切换、想象力五个方面，用来初步了解<strong>孤独谱系（ASD）特质</strong>的分布。</p>
-        <div class="guide-point"><span class="ic">📌</span><span>请按<strong>长期一贯</strong>的样子作答，而不是最近几周的状态。</span></div>
-        <div class="guide-point"><span class="ic">💡</span><span>没有标准答案，请按真实感受作答，不必迎合社会期待。</span></div>`
+      focus: "长期一贯的表现"
     }
   },
 
@@ -650,7 +634,6 @@ const MODULES = [
     id: "brief", tab: "deep", icon: "🧠", color: "#eef7ff",
     name: "BRIEF-A 核心摘录",
     desc: "任务启动 · 工作记忆 · 情绪控制",
-    note: "15 题 · 3 个维度 · 约 3 分钟",
     time: "3", items: BRIEF_ITEMS, opts: O.b3,
     detail(a) {
       const s = [0,1,2].map(k => a.slice(k*5, k*5+5).reduce((x,y) => x + (y||0), 0));
@@ -682,17 +665,14 @@ const MODULES = [
     },
     guide: {
       title: "BRIEF-A 执行功能核心摘录",
-      tag: "模块二 · 深度功能",
-      body: `<p>本摘录从 BRIEF-A 中提取三个最影响日常生活的维度：<strong>任务启动、工作记忆、情绪控制</strong>。</p>
-        <div class="guide-point"><span class="ic">📌</span><span>请按<strong>最近一个月</strong>的实际表现评分，而不是你希望自己做到的样子。</span></div>
-        <div class="guide-point"><span class="ic">💡</span><span>遇到没经历过的情境，按「如果是你来做，难度大概如何」估计即可。</span></div>`
+      focus: "最近一个月",
+      method: "没遇过的情境，可以估计自己完成的难度。"
     }
   },
   {
     id: "catq", tab: "deep", icon: "🎭", color: "#f5f0ff",
     name: "CAT-Q 社交伪装代价",
     desc: "评估你在社交中隐藏或补偿自身特质的程度",
-    note: "10 题 · 约 2 分钟 · 4 级",
     time: "2", items: CATQ_ITEMS, opts: O.a4,
     detail(a) { return {}; },
     conclude(r) {
@@ -719,17 +699,13 @@ const MODULES = [
     },
     guide: {
       title: "CAT-Q 社交伪装量表（摘录）",
-      tag: "模块二 · 深度功能",
-      body: `<p>CAT-Q 测量的是伪装这一行为：为了融入，你有多少时候在<strong>掩饰、补偿、同化</strong>。</p>
-        <div class="guide-point"><span class="ic">📌</span><span>请按你<strong>真实的社交习惯</strong>作答，不必评判好坏。</span></div>
-        <div class="guide-point"><span class="ic">💡</span><span>掩饰、补偿、同化都不是缺点，如实作答就好。</span></div>`
+      focus: "真实的社交习惯"
     }
   },
   {
     id: "tas", tab: "deep", icon: "🌫️", color: "#eef7f7",
     name: "TAS-20 述情障碍",
     desc: "识别与表达情绪的困难程度",
-    note: "20 题 · 1-5 级 · 约 3 分钟",
     time: "3", items: TAS_ITEMS, opts: O.t5, rev: [3, 4, 9, 17, 18], // 反向题：原版第 4/5/10/18/19 题
     detail(a) { return {}; },
     conclude(r) {
@@ -755,10 +731,8 @@ const MODULES = [
     },
     guide: {
       title: "TAS-20 述情障碍量表",
-      tag: "模块二 · 深度功能",
-      body: `<p>述情障碍描述的是<strong>识别与表达情绪的困难</strong>，它不是疾病，而是一种特质维度。</p>
-        <div class="guide-point"><span class="ic">📌</span><span>请按你<strong>一贯的样子</strong>作答。不确定时，选中间值也可以。</span></div>
-        <div class="guide-point"><span class="ic">💡</span><span>情绪没有对错，请按真实情况作答，不必评判自己的感受。</span></div>`
+      focus: "平时的表现",
+      method: "不确定时可以选中间项。"
     }
   },
 
@@ -767,7 +741,6 @@ const MODULES = [
     id: "phq9", tab: "comorbid", icon: "🌧️", color: "#eef2ff",
     name: "PHQ-9 抑郁筛查",
     desc: "近两周的情绪状态",
-    note: "近 2 周 · 9 题 · 约 2 分钟",
     time: "2", items: PHQ_ITEMS, opts: O.p4,
     detail(a) { return { selfHarm: a[8] || 0 }; },
     conclude(r) {
@@ -788,23 +761,21 @@ const MODULES = [
         <p>💡 建议：偶尔有几天情绪低落属正常波动；但若这种低落连续出现、或开始影响你起床、工作、与人相处，即使分数不高也值得再次关注。</p>`;
       }
       if (r.detail.selfHarm > 0) {
-        h += `<p>⚠️ 你提到过不如死掉或伤害自己的念头。<strong>请优先照顾自己的安全</strong>：联系身边信任的人，或拨打当地心理援助热线（如 12356 心理援助热线）。你不需要一个人扛。</p>`;
+        h += `<p class="safety-message">你提到过不如死掉或伤害自己的念头。<strong>请优先照顾自己的安全</strong>：联系身边信任的人，或拨打当地心理援助热线（如 12356 心理援助热线）。你不需要一个人扛。</p>`;
       }
       return h;
     },
     guide: {
       title: "PHQ-9 抑郁筛查",
-      tag: "模块三 · 共病状态",
-      body: `<p>PHQ-9 是最常用的抑郁初筛工具，评估<strong>最近两周</strong>的状态。</p>
-        <div class="guide-point"><span class="ic">📌</span><span>按过去两周<strong>有多少天</strong>出现该情况作答。</span></div>
-        <div class="guide-point warn"><span class="ic">💡</span><span>如果第 9 题涉及自伤念头，请务必认真对待，必要时立即寻求帮助。</span></div>`
+      focus: "最近两周",
+      method: "按出现的天数作答。",
+      notice: "第 9 题涉及自伤念头。如果有相关念头，请及时寻求帮助。"
     }
   },
   {
     id: "gad7", tab: "comorbid", icon: "🌀", color: "#eefaff",
     name: "GAD-7 焦虑筛查",
     desc: "近两周的焦虑水平",
-    note: "近 2 周 · 7 题 · 约 2 分钟",
     time: "2", items: GAD_ITEMS, opts: O.p4,
     detail(a) { return {}; },
     conclude(r) {
@@ -827,16 +798,13 @@ const MODULES = [
     },
     guide: {
       title: "GAD-7 焦虑筛查",
-      tag: "模块三 · 共病状态",
-      body: `<p>GAD-7 评估<strong>最近两周</strong>的焦虑症状强度。</p>
-        <div class="guide-point"><span class="ic">📌</span><span>按实际发生频率作答，不要按应该怎样。</span></div>`
+      focus: "最近两周"
     }
   },
   {
     id: "cptsd", tab: "comorbid", icon: "🪨", color: "#f6f0ff",
     name: "CPTSD 核心版",
     desc: "情绪失调与负面自我认知",
-    note: "10 题 · 5 级 · 约 2 分钟",
     time: "2", items: CPT_ITEMS, opts: O.c5,
     detail(a) {
       const emo = a.slice(0,3).reduce((x,y)=>x+(y||0),0);
@@ -881,17 +849,14 @@ const MODULES = [
     },
     guide: {
       title: "CPTSD 核心症状筛查",
-      tag: "模块三 · 共病状态",
-      body: `<p>这份核心版聚焦复杂性创伤后应激的三个关键面向：<strong>情绪失调、负面自我认知、关系与警觉</strong>。</p>
-        <div class="guide-point warn"><span class="ic">💡</span><span>本量表可能触及不愉快的记忆。你可以随时停下，不必勉强完成。</span></div>
-        <div class="guide-point"><span class="ic">💡</span><span>请按最近一段时间的一般状态作答，而不是最难受的那一天。</span></div>`
+      focus: "最近一段时间的通常状态",
+      notice: "可能触及不愉快的回忆。你可以随时停下。"
     }
   },
   {
     id: "mdq", tab: "comorbid", icon: "🌗", color: "#fff8ee",
     name: "MDQ 双相摘要",
     desc: "情绪高涨期的筛查提示",
-    note: "13 题 + 1 题综合 · 是/否",
     time: "3", items: MDQ_ITEMS, opts: O.yn,
     detail(a) { return { yes: a.slice(0,13).filter(v => v === 1).length, combined: a[13] === 1 }; },
     conclude(r) {
@@ -914,17 +879,14 @@ const MODULES = [
     },
     guide: {
       title: "MDQ 双相谱系筛查（摘要）",
-      tag: "模块三 · 共病状态",
-      body: `<p>这组题目询问的是<strong>情绪高涨期</strong>：是否曾有一段时间，精力和情绪明显不同于平常。</p>
-        <div class="guide-point"><span class="ic">📌</span><span>请回想<strong>是否有过这样的时期</strong>，而不是最近几天的状态。</span></div>
-        <div class="guide-point warn"><span class="ic">💡</span><span>本结果只作提示，双相的判断必须由专业医生完成。</span></div>`
+      focus: "曾经的情绪高涨期",
+      method: "回想精力或情绪明显不同于平常的一段时间。"
     }
   },
   {
     id: "msi", tab: "comorbid", icon: "🫂", color: "#fff0f0",
     name: "MSI-BPD 情绪痛苦模式",
     desc: "10 个与强烈情绪相关的体验",
-    note: "10 题 · 是/否 · 约 2 分钟",
     time: "2", items: MSI_ITEMS, opts: O.yn,
     detail(a) { return {}; },
     conclude(r) {
@@ -950,10 +912,7 @@ const MODULES = [
     },
     guide: {
       title: "MSI-BPD 情绪痛苦模式筛查",
-      tag: "模块三 · 共病状态",
-      body: `<p>这份清单关注的是<strong>强烈情绪下的应对方式</strong>：关系波动、自我评价起伏、冲动、空虚感。</p>
-        <div class="guide-point"><span class="ic">🫂</span><span>请放心作答：这些体验描述的是应对痛苦的方式，<strong>不是人格缺陷</strong>，也不带任何评判。</span></div>
-        <div class="guide-point"><span class="ic">💡</span><span>按你长期、反复出现的体验作答，而非偶然一次。</span></div>`
+      focus: "长期反复出现的体验"
     }
   },
 
@@ -962,7 +921,6 @@ const MODULES = [
     id: "psqi", tab: "physio", icon: "🌙", color: "#eef3ff",
     name: "PSQI 睡眠质量核心版",
     desc: "入睡、睡眠效率与日间功能",
-    note: "9 题 · 近 1 个月 · 约 2 分钟",
     time: "2", items: PSQI_ITEMS, opts: O.p4,
     detail(a) {
       const fall = [0,5,6].reduce((s,i) => s + (a[i]||0), 0);   // 入睡困难
@@ -998,17 +956,13 @@ const MODULES = [
     },
     guide: {
       title: "PSQI 睡眠质量核心版",
-      tag: "模块四 · 生理状态",
-      body: `<p>本版聚焦三个最影响日常的睡眠面向：<strong>入睡困难、睡眠效率、日间功能障碍</strong>。</p>
-        <div class="guide-point"><span class="ic">📌</span><span>请按<strong>最近一个月</strong>的典型情况作答。</span></div>
-        <div class="guide-point"><span class="ic">💡</span><span>若记不清细节，按大致印象估算即可。</span></div>`
+      focus: "最近一个月"
     }
   },
   {
     id: "chrono", tab: "physio", icon: "⏰", color: "#f2f0ff",
     name: "昼夜节律自测（rMEQ）",
     desc: "晨型 / 夜型的专业测量",
-    note: "5 题 · 约 2 分钟",
     time: "2", items: CHRONO_ITEMS,
     detail(a) { return {}; },
     conclude(r) {
@@ -1032,10 +986,7 @@ const MODULES = [
     },
     guide: {
       title: "昼夜节律自测（rMEQ）",
-      tag: "模块四 · 生理状态",
-      body: `<p>本测试是 <strong>rMEQ（晨型-夜型问卷精简版，Adan 与 Almirall 1991）</strong>，用于测量你的睡眠时相是偏晨型还是夜型。</p>
-        <div class="guide-point"><span class="ic">📌</span><span>请按你<strong>一贯的习惯</strong>作答，而不是最近几天被外界打乱的状态。</span></div>
-        <div class="guide-point"><span class="ic">💡</span><span>没有标准答案，按你真实的作息倾向选择即可。</span></div>`
+      focus: "平时的作息习惯"
     }
   }
 ];
@@ -1081,17 +1032,6 @@ function firstUnanswered(mod) {
   return a.length - 1;
 }
 function answeredCount(mod) { return answersOf(mod).filter(v => v != null).length; }
-/* 当前模块（Tab）内，紧跟在 mod 之后的那个测试；已是最后一个则返回 null */
-function nextInModule(mod) {
-  const list = tabModules(mod.tab);
-  const idx = list.findIndex(m => m.id === mod.id);
-  return (idx >= 0 && idx < list.length - 1) ? list[idx + 1] : null;
-}
-function isLastInModule(mod) {
-  const list = tabModules(mod.tab);
-  return list.length > 0 && list[list.length - 1].id === mod.id;
-}
-
 /* ---------- 各 Tab（模块）的完成度与汇总报告状态 ---------- */
 function tabModules(tabId) { return MODULES.filter(m => m.tab === tabId); }
 function tabDoneCount(tabId) { return tabModules(tabId).filter(m => state.results[m.id]).length; }
@@ -1223,7 +1163,6 @@ function tabReportCard(tabId) {
   const st = tabReportState(tabId);
   if (unlocked) {
     return `<button class="tab-report unlocked" onclick="openTabReport('${tabId}')">
-      <div class="tr-icon">🗂️</div>
       <div class="tr-main">
         <div class="tr-title">${t.name}汇总报告</div>
         <div class="tr-desc">已完成 ${all} 项量表</div>
@@ -1232,7 +1171,6 @@ function tabReportCard(tabId) {
     </button>`;
   }
   return `<button class="tab-report" onclick="tabLocked('${tabId}')">
-    <div class="tr-icon">🔒</div>
     <div class="tr-main">
       <div class="tr-title">${t.name}汇总报告</div>
       <div class="tr-desc">完成本组量表后可查看</div>
@@ -1267,7 +1205,9 @@ function showHome(moveFocus = true) {
   renderCompSlot();
   const hasResults = MODULES.some(m => state.results[m.id]);
   document.getElementById("export-report").hidden = !hasResults;
-  document.getElementById("clear-results").hidden = !hasResults && !MODULES.some(m => answeredCount(m));
+  const more = document.getElementById("home-more");
+  more.hidden = !hasResults && !MODULES.some(m => answeredCount(m));
+  more.open = false;
   switchScreen("s-home", moveFocus);
 }
 
@@ -1286,31 +1226,30 @@ function switchScreen(id, moveFocus = true) {
 function openGuide(idx) {
   curMod = MODULES[idx];
   const g = curMod.guide;
-  document.getElementById("g-em").textContent = curMod.icon;
   document.getElementById("g-title").textContent = g.title;
-  document.getElementById("g-tag").textContent = g.tag + " · " + curMod.note;
-  document.getElementById("g-info").innerHTML = `
-    <div class="info-cell"><div class="num">${curMod.items.length}</div><div class="lb">题目数</div></div>
-    <div class="info-cell"><div class="num">${curMod.time}</div><div class="lb">分钟（预估）</div></div>
-    <div class="info-cell"><div class="num">${state.results[curMod.id] ? "✓" : answeredCount(curMod)}</div><div class="lb">${state.results[curMod.id] ? "已完成" : "已答题"}</div></div>`;
-  document.getElementById("g-body").innerHTML = g.body;
+  document.getElementById("g-focus").textContent = g.focus;
+  setOptionalText("g-method", g.method);
+  setOptionalText("g-notice", g.notice);
 
   const btn = document.getElementById("g-start");
-  const partial = !state.results[curMod.id] && answeredCount(curMod) > 0;
   const result = currentResult(curMod);
-  btn.textContent = result ? "查看结果" : partial ? `继续答题（第 ${firstUnanswered(curMod) + 1} 题）` : "开始测试";
+  const answered = answeredCount(curMod);
+  const partial = !result && answered > 0;
+  btn.textContent = result ? "查看结果" : partial ? `继续第 ${firstUnanswered(curMod) + 1} 题` : "开始测试";
   btn.onclick = result ? () => viewResult(curMod.id) : () => startQuiz(partial);
-
-  /* 单个测试「重新测试」：仅在本测试已有进度或结果时显示，清空后从头开始 */
-  const retest = document.getElementById("g-retest");
-  const hasState = answeredCount(curMod) > 0 || !!state.results[curMod.id];
-  retest.style.display = hasState ? "block" : "none";
-  retest.onclick = () => {
-    if (!confirm("确定要清空本测试的答案与结果，重新开始吗？")) return;
-    startQuiz(false);
-  };
+  document.getElementById("g-retest").hidden = !result && answered === 0;
 
   switchScreen("s-guide");
+}
+
+function setOptionalText(id, text) {
+  const node = document.getElementById(id);
+  node.textContent = text || "";
+  node.hidden = !text;
+}
+
+function retestCurrentScale() {
+  if (confirm("清空本量表的答案与结果，重新开始？")) startQuiz(false);
 }
 
 function startQuiz(resume) {
@@ -1326,9 +1265,8 @@ function startQuiz(resume) {
 
 function renderQuestion() {
   const mod = curMod, total = mod.items.length;
-  document.getElementById("q-mname").textContent = mod.name;
-  document.getElementById("q-cur").textContent = curQ + 1;
-  document.getElementById("q-total").textContent = total;
+  document.getElementById("q-scope").textContent = mod.guide.focus;
+  document.getElementById("q-position").textContent = `第 ${curQ + 1} / ${total} 题`;
   const progress = document.getElementById("q-bar");
   progress.max = total;
   progress.value = answeredCount(mod);
@@ -1336,18 +1274,11 @@ function renderQuestion() {
   const text = mod.items[curQ];
   document.getElementById("q-text").textContent = typeof text === "string" ? text : text.q;
 
-  const hint = document.getElementById("q-hint");
-  if (mod.id === "wurs" && curQ === 0) {
-    hint.hidden = false;
-    hint.textContent = "💡 请回想你 8-12 岁时的状态，而不是现在。";
-  } else if (typeof text === "object" && text.hint) {
-    hint.hidden = false; hint.textContent = "💡 " + text.hint;
-  } else { hint.hidden = true; }
-
-  const ex = document.getElementById("q-ex");
-  if (typeof text === "object" && text.ex) {
-    ex.hidden = false; ex.textContent = "例：" + text.ex;
-  } else { ex.hidden = true; }
+  setOptionalText("q-hint", text.hint);
+  const example = document.getElementById("q-example");
+  example.open = false;
+  example.hidden = !text.ex;
+  document.getElementById("q-ex").textContent = text.ex || "";
 
   const a = answersOf(mod);
   const wrap = document.getElementById("options");
@@ -1420,59 +1351,42 @@ function finishQuiz() {
  * 7. 单项结果页
  * ===================================================================== */
 
+function showReportContent(bodyId, safetyId, html) {
+  const body = document.getElementById(bodyId);
+  body.innerHTML = html;
+  const safety = document.getElementById(safetyId);
+  safety.replaceChildren(...body.querySelectorAll(".safety-message"));
+  safety.hidden = !safety.childElementCount;
+}
+
+function setNextAction(id, homeId, label, action) {
+  const next = document.getElementById(id);
+  next.textContent = label;
+  next.onclick = action;
+  document.getElementById(homeId).hidden = action === showHome;
+}
+
 function renderResult(mod, r) {
-  const concl = mod.conclude(r);
-  document.getElementById("r-em").textContent = concl.emoji;
-  document.getElementById("r-title").textContent = concl.label;
-  document.getElementById("r-score").innerHTML = mod.id === "dsm"
-    ? `注意 <strong>${r.detail.att}/9</strong> · 多动 <strong>${r.detail.hyp}/9</strong>`
-    : `得分 <strong>${r.score}</strong> / ${r.max}`;
-  document.getElementById("r-interpret").innerHTML = mod.interpret(r);
+  document.getElementById("r-scale").textContent = mod.name;
+  document.getElementById("r-title").textContent = mod.conclude(r).label;
+  document.getElementById("r-score").textContent = mod.id === "dsm"
+    ? `注意 ${r.detail.att}/9 · 多动 ${r.detail.hyp}/9`
+    : `得分 ${r.score} / ${r.max}`;
+  document.getElementById("r-detail").open = false;
+  document.getElementById("r-more").open = false;
+  showReportContent("r-interpret", "r-safety", mod.interpret(r));
 
-  /* 本 Tab 是否已全部完成 → 提示可查看模块汇总报告 */
-  const note = document.getElementById("r-tabnote");
-  const lastInModule = isLastInModule(mod);
-  if (lastInModule && tabUnlocked(mod.tab)) {
-    // 主按钮已是「查看本模块汇总报告」，这里只做一行完成提示，避免重复
-    const t = TABS.find(x => x.id === mod.tab);
-    note.innerHTML = `<div class="entry-note" style="text-align:center;margin-top:12px;">✅ ${t.name} ${tabModules(mod.tab).length} 项已全部完成</div>`;
-  } else if (tabUnlocked(mod.tab)) {
-    const t = TABS.find(x => x.id === mod.tab);
-    note.innerHTML = `<button class="tab-unlock-note" onclick="openTabReport('${mod.tab}')">
-      <span class="ic">🗂️</span>
-      <span class="tx">
-        <span class="t1">${t.name} ${tabModules(mod.tab).length} 项已全部完成</span>
-        <span class="t2">本模块的联动结果已经可以汇总查看</span>
-      </span>
-      <span class="go">查看 →</span>
-    </button>`;
-  } else {
-    const t = TABS.find(x => x.id === mod.tab);
-    note.innerHTML = `<div class="entry-note" style="text-align:center;margin-top:12px;">${t.name}进度 ${tabDoneCount(mod.tab)}/${tabModules(mod.tab).length} · 全部完成后可查看本模块汇总报告</div>`;
+  if (tabUnlocked(mod.tab)) {
+    setNextAction("r-next", "r-home", "查看模块报告", () => openTabReport(mod.tab));
+    return;
   }
-
-  document.getElementById("r-retry").onclick = () => {
-    state.answers[mod.id] = new Array(mod.items.length).fill(null);
-    delete state.results[mod.id];
-    saveState();
-    curMod = mod; startQuiz(false);
-  };
-
-  /* 结果页主按钮：非本模块最后一个 →「下一个测试」；本模块最后一个 →「查看本模块汇总报告」 */
-  const nextBtn = document.getElementById("r-next");
-  if (lastInModule) {
-    if (tabUnlocked(mod.tab)) {
-      nextBtn.style.display = "block";
-      nextBtn.textContent = "查看本模块汇总报告";
-      nextBtn.onclick = () => openTabReport(mod.tab);
-    } else {
-      nextBtn.style.display = "none";
-    }
+  const scales = tabModules(mod.tab);
+  const index = scales.indexOf(mod);
+  const next = scales.slice(index + 1).find(scale => !currentResult(scale));
+  if (next) {
+    setNextAction("r-next", "r-home", `继续 ${next.name}`, () => openGuide(MODULES.indexOf(next)));
   } else {
-    const next = nextInModule(mod);
-    nextBtn.style.display = "block";
-    nextBtn.textContent = `下一个测试：${next.name}`;
-    nextBtn.onclick = () => openGuide(MODULES.indexOf(next));
+    setNextAction("r-next", "r-home", "返回量表目录", showHome);
   }
 }
 
@@ -1490,7 +1404,10 @@ function viewResult(id) {
  *     - 报告状态记录在 state.tabReports[tabId] = { unlocked, viewed, time }
  * ===================================================================== */
 function rsec(title, html, cls) {
-  return `<div class="sec ${cls || ""}"><div class="sec-title">${title}</div>${html}</div>`;
+  const label = title.replace(/^[📊⚠️①②③④⑤⑥]+\s*/u, "");
+  return `<details class="report-section${cls === "alert" ? " report-caution" : ""}">
+    <summary>${label}</summary><div class="sec-body">${html}</div>
+  </details>`;
 }
 
 /* 首页/报告用的紧凑摘要 */
@@ -1599,7 +1516,7 @@ function buildCoreReport() {
     rsec("② 时间轴：当下 × 童年", `<p>${timeline}</p>`) +
     rsec("③ 症状形态：注意 vs 多动", shape) +
     rsec("④ 神经多样性叠加", asd) +
-    rsec("⑤ 下一步", next, "safe");
+    rsec("⑤ 下一步", next);
 
   return { emoji: "🗂️", sub: `${label} · 4 个量表的联动解读`, html: html + INSURANCE_CLOSE };
 }
@@ -1667,7 +1584,7 @@ function buildDeepReport() {
     rsec("② 执行功能：你最薄弱的一环", execBlock) +
     rsec("③ 社交伪装的代价", cost) +
     rsec("④ 情绪的识别与表达", alexiBlock) +
-    rsec("⑤ 最小可行调整", next, "safe");
+    rsec("⑤ 最小可行调整", next);
 
   return { emoji: "🧠", sub: `${label} · 执行功能与内耗结构`, html: html + INSURANCE_CLOSE };
 }
@@ -1723,7 +1640,7 @@ function buildComorbidReport() {
   /* ④ 安全与下一步 */
   let safety = "";
   if (P.detail.selfHarm > 0) {
-    safety += `<p>⚠️ 你在 PHQ-9 第 9 题提到过不如死掉或伤害自己的念头。<strong>请优先照顾自己的安全</strong>：联系身边信任的人，或拨打当地心理援助热线（如 12356）。你不需要一个人扛，也不需要在状态最差的时候独自做判断。</p>`;
+    safety += `<p class="safety-message">你在 PHQ-9 第 9 题提到过不如死掉或伤害自己的念头。<strong>请优先照顾自己的安全</strong>：联系身边信任的人，或拨打当地心理援助热线（如 12356）。你不需要一个人扛，也不需要在状态最差的时候独自做判断。</p>`;
   }
   safety += heavy
     ? `<p>建议把这份结果当作一个提醒：<strong>现在最值得投入的方向是情绪，而不是继续给自己贴上我太懒的标签。</strong>规律作息、减少负荷、必要时寻求专业帮助；如果有条件，优先找一位能同时评估情绪与注意力的医生。</p>`
@@ -1735,7 +1652,7 @@ function buildComorbidReport() {
     rsec("① 情绪总体负荷", `<p>${overall}</p><p class="small">综合结论：<strong>${label}</strong></p>`) +
     rsec("② 它们如何伪装成 ADHD", disguise) +
     rsec("③ 情绪波动与冲动", volatility) +
-    rsec("④ 安全与下一步", safety, heavy ? "alert" : "safe");
+    rsec("④ 安全与下一步", safety, heavy ? "alert" : undefined);
 
   return { emoji: "🌧️", sub: `${label} · 5 个筛查的交叉解读`, html: html + INSURANCE_CLOSE };
 }
@@ -1800,10 +1717,9 @@ function openTabReport(tabId) {
   const t = TABS.find(x => x.id === tabId);
   const rep = TAB_REPORTS[tabId]();
 
-  document.getElementById("tr-em").textContent = rep.emoji;
   document.getElementById("tr-title").textContent = `${t.name}汇总报告`;
-  document.getElementById("tr-sub").textContent = rep.sub;
-  document.getElementById("tr-body").innerHTML = rep.html;
+  document.getElementById("tr-sub").textContent = rep.sub.split(" · ")[0];
+  showReportContent("tr-body", "tr-safety", rep.html);
 
   /* 记录已查看，与解锁状态一起写入 localStorage */
   const e = state.tabReports[tabId] || (state.tabReports[tabId] = { unlocked: true, time: Date.now() });
@@ -1812,75 +1728,48 @@ function openTabReport(tabId) {
   e.viewedAt = Date.now();
   saveState();
 
-  /* 「下一个模块测试」按钮：跳到下一个模块去测试（生理状态是最后一个，不显示） */
-  const mi = TABS.findIndex(x => x.id === tabId);
-  const nextModuleTab = TABS[mi + 1];
-  const nextModuleBtn = document.getElementById("tr-next-module");
-  if (nextModuleTab) {
-    nextModuleBtn.style.display = "block";
-    nextModuleBtn.onclick = () => { switchTab(nextModuleTab.id); showHome(); };
+  const nextTab = TABS.slice(TABS.indexOf(t) + 1).find(tab => !tabUnlocked(tab.id));
+  if (MODULES.every(m => state.results[m.id])) {
+    setNextAction("tr-next-module", "tr-home", "查看综合报告", showComprehensive);
+  } else if (nextTab) {
+    setNextAction("tr-next-module", "tr-home", `继续 ${nextTab.name}`, () => {
+      switchTab(nextTab.id);
+      showHome();
+    });
   } else {
-    nextModuleBtn.style.display = "none";
+    setNextAction("tr-next-module", "tr-home", "返回量表目录", showHome);
   }
-
-  const allDone = MODULES.every(m => state.results[m.id]);
-  const compBtn = document.getElementById("tr-comp");
-  compBtn.style.display = allDone ? "block" : "none";
-  compBtn.onclick = () => showComprehensive();
 
   switchScreen("s-tabrep");
 }
 
 /* 通用锁定页 */
-function lockPage(opts) {
-  document.getElementById("l-sub").textContent = opts.sub;
-  document.getElementById("l-body").innerHTML = opts.body;
-  const btn = document.getElementById("l-btn");
-  btn.textContent = opts.btn;
-  btn.onclick = opts.action;
+function showPendingReport(title, scales) {
+  const missing = scales.filter(scale => !currentResult(scale));
+  const next = missing.find(scale => answeredCount(scale) > 0) || missing[0];
+  document.getElementById("l-title").textContent = title;
+  document.getElementById("l-sub").textContent = `再完成 ${missing.length} 项即可查看报告。`;
+  document.getElementById("l-detail").open = false;
+  document.getElementById("l-body").innerHTML = missing.map(scale => {
+    const answered = answeredCount(scale);
+    return `<li><span>${escapeHtml(scale.name)}</span><span>${answered ? `已答 ${answered} / ${scale.items.length}` : "未开始"}</span></li>`;
+  }).join("");
+  const button = document.getElementById("l-btn");
+  button.textContent = answeredCount(next) ? "继续作答" : "开始下一项";
+  button.onclick = () => {
+    switchTab(next.tab);
+    openGuide(MODULES.indexOf(next));
+  };
   switchScreen("s-locked");
 }
 
-/* 某个 Tab 的汇总报告未解锁 */
 function tabLocked(tabId) {
-  const t = TABS.find(x => x.id === tabId);
-  const all = tabModules(tabId).length;
-  const done = tabDoneCount(tabId);
-  const missing = tabModules(tabId).filter(m => !state.results[m.id]);
-  const rows = missing.length
-    ? missing.map(m => {
-        const started = answeredCount(m) > 0;
-        return `<div class="miss-row">${m.icon} ${m.name}<span>${started ? `进行中 ${answeredCount(m)}/${m.items.length}` : "未开始"}</span></div>`;
-      }).join("")
-    : `<div class="miss-row">全部完成<span>✓</span></div>`;
-  lockPage({
-    sub: `${t.name} · 已完成 ${done}/${all}`,
-    body: `<p class="small muted">完成本模块全部 ${all} 项后，即可生成<strong>${t.name}汇总报告</strong>。还差：</p>
-      <div style="margin-top:10px;">${rows}</div>`,
-    btn: `返回${t.name}继续测试`,
-    action: () => { switchTab(tabId); showHome(); }
-  });
+  const tab = TABS.find(item => item.id === tabId);
+  showPendingReport(`${tab.name}汇总报告`, tabModules(tabId));
 }
 
-/* =====================================================================
- * 8. 综合报告
- * ===================================================================== */
 function compLocked() {
-  const done = MODULES.filter(m => state.results[m.id]).length;
-  const rows = MODULES.map(m => {
-    const r = state.results[m.id];
-    const st = r ? `<span style="color:var(--ok);font-weight:600;">✓ ${escapeHtml(shortSummary(m, r))}</span>`
-                 : `<span style="color:var(--t3);">未完成</span>`;
-    return `<div style="display:flex;justify-content:space-between;gap:10px;font-size:13px;margin-bottom:9px;">
-      <span style="flex-shrink:0;">${m.icon} ${m.name}</span><span style="text-align:right;">${st}</span></div>`;
-  }).join("");
-  const tabOk = TABS.filter(t => tabUnlocked(t.id)).length;
-  lockPage({
-    sub: `当前进度：${done} / ${MODULES.length} · 模块报告 ${tabOk}/4`,
-    body: `<p class="small muted" style="margin-bottom:12px;">综合报告需要完成全部 14 项。如果只想先看某一组，可以回到首页查看已解锁的<strong>模块汇总报告</strong>：</p>${rows}`,
-    btn: "返回量表目录继续测试",
-    action: () => showHome()
-  });
+  showPendingReport("综合报告", MODULES);
 }
 
 function showComprehensive() {
@@ -1920,15 +1809,11 @@ function showComprehensive() {
   /* ---- 6. 生理 ---- */
   const sleepBad = psqi.score >= 8;
 
-  const body = [];
-  const sec = (title, html, cls) =>
-    `<div class="sec ${cls || ""}"><div class="sec-title">${title}</div>${html}</div>`;
-
   /* 构建报告 */
   let h = "";
 
   if (moodFirst) {
-    h += sec("⚠️ 优先级提示：先看情绪",
+    h += rsec("⚠️ 优先级提示：先看情绪",
       `<p>你的情绪筛查得分偏高（${moodFlags.join("、")}）。这一点很重要：<strong>情绪问题本身就会制造出像 ADHD的表现</strong>，注意力涣散、拖延、易怒、坐不住。</p>
        <p>所以在当前阶段，更合理的顺序是<strong>先处理情绪</strong>：规律睡眠、减少负荷、必要时寻求专业帮助；等情绪稳定 4-6 周后，再回头看注意力的问题，判断会准确得多。</p>
        <p class="small">这不代表你的 ADHD 特征一定不存在，只是此刻无法可靠区分。</p>`,
@@ -1940,7 +1825,7 @@ function showComprehensive() {
     const t = TABS.find(x => x.id === m.tab);
     return `<div class="stat-row"><span class="sr-name">${m.icon} ${m.name}<span class="small" style="color:var(--t3);"> · ${t ? t.name : ""}</span></span><span class="sr-val">${escapeHtml(shortSummary(m, r))}</span></div>`;
   }).join("");
-  h += sec("📊 各量表结果一览", allRows);
+  h += rsec("📊 各量表结果一览", allRows);
 
   const verdictExplain = adhdTendency.level === 3
     ? "你的特征在当下和童年两个时间点都明显，符合 ADHD 作为神经发育障碍的典型模式（症状需在 12 岁前出现，并延续到成年）。"
@@ -1948,13 +1833,13 @@ function showComprehensive() {
       ? "你存在一部分 ADHD 相关特征，但证据还不够完整或典型，需要结合情绪、睡眠和实际功能损害综合判断，不能仅凭分数下结论。"
       : "目前的筛查没有发现明显支持 ADHD 的线索；如果你仍感到吃力，困扰更可能来自情绪、睡眠或环境压力。";
 
-  h += sec("① 综合判定",
+  h += rsec("① 综合判定",
     `<p>结合当下状态（ASRS）、童年回溯（WURS）与 DSM-5 条目核对，你的整体画像更接近：<strong>${adhdTendency.text}</strong>。</p>
      <p>${verdictExplain}</p>
      <p class="small">ASRS 核心题达标 ${asrs.detail.core}/6 · WURS ${wurs.score} 分（36 分线）· DSM-5 ${escapeHtml(summaryOf(byId("dsm"), dsm))}</p>
      ${audhd ? `<p><span class="mini-tag">AuDHD</span>同时，你的 ASD 特质得分 ${aq.score} 分（≥65），提示 <strong>AuDHD（ADHD 与 ASD 重叠）</strong>的可能。两者并存时常常互相掩盖：ADHD 带来混乱与冲动，ASD 带来的秩序需求又把它压住，外人更难看出来，你自己也更累。</p>` : ""}`);
 
-  h += sec("② 你的核心卡点",
+  h += rsec("② 你的核心卡点",
     `<p><span class="mini-tag">执行功能</span>最薄弱的环节是<strong>${briefWeak}</strong>。这通常是你日常最容易卡住的地方，也最值得优先设计外部支架。</p>
      ${maskHigh ? `<p><span class="mini-tag">伪装耗竭</span>你在社交伪装（CAT-Q ${catq.score}/30）上的信号明显：这些年你一直在用额外的力气维持看起来正常，疲惫不是矫情，是真实的消耗。</p>` : ""}
      ${tas.score >= 61 ? `<p><span class="mini-tag">情绪识别</span>TAS-20 ${tas.score} 分，提示明显的述情障碍：情绪常在说不清的状态里堆积，直到突然爆发。</p>` : ""}
@@ -1963,25 +1848,27 @@ function showComprehensive() {
      ${msi.score >= 7 ? `<p><span class="mini-tag">情绪痛苦</span>MSI-BPD ${msi.score}/10，提示你在强烈情绪中有一套高消耗的应对模式。它曾经保护过你，现在值得换成更省力的方式。</p>` : ""}`);
 
   const needEval = adhdTendency.level >= 2;
-  h += sec("③ 下一步怎么走",
+  h += rsec("③ 下一步怎么走",
     `<p>${moodFirst
         ? "先处理情绪，再评估注意力。这不是拖延，而是更有效率的顺序。"
         : needEval
           ? "你的特征组合已经比较清晰，如果这些困扰确实影响到了工作、学习或关系，值得做一次正式评估。"
           : "目前的量表结果整体较轻。可以先从睡眠和压力入手，观察 1-2 个月再判断。"}</p>
      <p>如有需要，你可以携带本结果前往正规医院评估（具体科室视医院设置而定）。是否就医取决于你的主观意愿。</p>
-     <p class="small">如果决定就诊：把这份报告、童年回溯的结果、以及最困扰你的 3 个具体场景一起带上，会比空手描述有效得多。</p>`,
-    "safe");
+     <p class="small">如果决定就诊：把这份报告、童年回溯的结果、以及最困扰你的 3 个具体场景一起带上，会比空手描述有效得多。</p>`);
 
   h += INSURANCE_CLOSE;
 
-  document.getElementById("c-tabnav").innerHTML = TABS.map(t => tabUnlocked(t.id)
-    ? `<span class="chip">🗂️ ${t.name}</span>`
-    : `<span class="chip" style="opacity:.45;">🔒 ${t.name}</span>`).join("");
-
   document.getElementById("c-sub").textContent =
     `${adhdTendency.text}${audhd ? " · AuDHD 重叠可能" : ""}`;
-  document.getElementById("c-body").innerHTML = h;
+  showReportContent("c-body", "c-safety", h);
+  if (phq.detail.selfHarm > 0) {
+    const message = document.createElement("template");
+    message.innerHTML = byId("phq9").interpret(phq);
+    const safety = document.getElementById("c-safety");
+    safety.replaceChildren(...message.content.querySelectorAll(".safety-message"));
+    safety.hidden = !safety.childElementCount;
+  }
   switchScreen("s-comp");
 }
 

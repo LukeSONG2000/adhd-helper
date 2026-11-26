@@ -1,5 +1,6 @@
 from collections import defaultdict
 from dataclasses import dataclass
+from hashlib import sha256
 from html import escape
 import json
 from pathlib import Path
@@ -14,6 +15,11 @@ ROOT = Path(__file__).resolve().parents[1]
 NOTES = ROOT / "guide" / "ADHD人生设计指南"
 FULL_GUIDE = ROOT / "guide" / "ADHD人生设计指南 - 全文.md"
 DEST = ROOT / "_site"
+ASSETS = ROOT / "site" / "assets"
+STYLE_URLS = {
+    name: f"assets/{name}?v={sha256((ASSETS / name).read_bytes()).hexdigest()[:12]}"
+    for name in ("site.css", "assessment.css")
+}
 REPOSITORY = "https://github.com/LukeSONG2000/adhd-helper"
 GUIDE_PAGE = "guide.html"
 UPSTREAM = "https://github.com/ZHCstudio/adhd-test"
@@ -72,7 +78,7 @@ def shell(title, content, base=""):
   <meta name="description" content="ADHD 自测入口、生活指南和实用工具。">
   <title>{escape(page_title)}</title>
   <link rel="icon" type="image/png" href="{base}assets/favicon.png">
-  <link rel="stylesheet" href="{base}assets/site.css">
+  <link rel="stylesheet" href="{base}{STYLE_URLS['site.css']}">
 </head>
 <body>
   <a class="skip-link" href="#main">跳到正文</a>
@@ -121,25 +127,20 @@ def build_library(notes):
         </section>""")
 
     content = f"""
-  <main id="main" class="wrap">
+  <main id="main" class="wrap guide-library">
     <section id="library" class="library" aria-labelledby="library-title">
       <div class="library-header">
-        <div>
-          <h1 id="library-title">人生设计指南</h1>
-          <div class="library-links">
-            {note_link(start)}
-            <a href="#downloads">下载 Markdown</a>
-          </div>
-        </div>
+        <h1 id="library-title">人生设计指南</h1>
         <div class="search" hidden>
           <label for="guide-search">搜索指南</label>
-          <input id="guide-search" type="search" placeholder="例如：起床、时间盲、过载" autocomplete="off" aria-controls="guide-sections">
+          <input id="guide-search" type="search" placeholder="主题或关键词" autocomplete="off" aria-controls="guide-sections">
           <p id="search-status" role="status" aria-live="polite" hidden></p>
         </div>
       </div>
       <nav class="part-nav" aria-label="指南分类">
         {''.join(f'<a href="#{section}">{label}</a>' for section, label in SECTIONS.items())}
       </nav>
+      <div class="library-links">{note_link(start)}</div>
       <div id="guide-sections">{''.join(parts)}</div>
       <p id="no-results" hidden>没有找到匹配的文章。可以换个关键词。</p>
     </section>
@@ -163,7 +164,10 @@ def note_markup(note, base):
             anchor = f"section-{len(headings) + 1}"
             token.attrSet("id", anchor)
             headings.append((anchor, tokens[index + 1].content))
-        for child in token.children or ():
+        children = token.children or ()
+        for position, child in enumerate(children):
+            if child.type == "strong_open" and children[position + 1].content == "怎么做":
+                child.attrSet("class", "step-label")
             if child.type == "link_open" and unquote(child.attrGet("href") or "").endswith("总目录.md"):
                 child.attrSet("href", f"{base}{GUIDE_PAGE}#library")
 
@@ -212,11 +216,14 @@ def build_downloads():
 def main():
     if DEST.is_dir():
         shutil.rmtree(DEST)
-    shutil.copytree(ROOT / "site" / "assets", DEST / "assets")
+    shutil.copytree(ASSETS, DEST / "assets")
     notes = load_notes()
     build_library(notes)
     assessment = (ROOT / "index.html").read_text(encoding="utf-8")
-    (DEST / "index.html").write_text(assessment.replace('href="site/assets/', 'href="assets/'), encoding="utf-8")
+    assessment = assessment.replace('href="site/assets/', 'href="assets/')
+    for name, url in STYLE_URLS.items():
+        assessment = assessment.replace(f'href="assets/{name}"', f'href="{url}"')
+    (DEST / "index.html").write_text(assessment, encoding="utf-8")
     (DEST / "test.html").write_text("""<!doctype html>
 <html lang="zh-CN">
 <head>
