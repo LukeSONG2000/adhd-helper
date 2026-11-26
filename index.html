@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>ADHD 自测 · ADHD Helper</title>
 <meta name="description" content="ADHD 与神经多样性自测，含 14 项量表与报告。">
 <script>
@@ -15,48 +15,76 @@ addEventListener("hashchange", openLegacyGuideSection);
 openLegacyGuideSection();
 </script>
 <link rel="icon" type="image/png" href="site/assets/favicon.png">
+<script src="site/assets/appearance.js"></script>
 <link rel="stylesheet" href="site/assets/site.css">
+<link rel="stylesheet" href="site/assets/guide.css">
 <link rel="stylesheet" href="site/assets/assessment.css">
+<script src="site/assets/search.js" defer></script>
 </head>
 <body class="assessment-page">
 <a class="skip-link" href="#main">跳到正文</a>
 <header class="site-header">
   <div class="wrap header-line">
     <a class="wordmark" href="./"><span class="mark" aria-hidden="true"></span>ADHD Helper</a>
-    <nav aria-label="主导航">
-      <a href="./" aria-current="page">自测</a>
-      <a href="./guide.html">指南</a>
-    </nav>
+    <div class="header-tools">
+      <nav aria-label="主导航"><a href="./" aria-current="page">自测</a><a href="./guide.html">指南</a></nav>
+      <button type="button" class="toolbar-button guide-search-button" id="search-trigger" aria-label="搜索量表" hidden><span class="icon icon-search" aria-hidden="true"></span><span class="toolbar-label" aria-hidden="true">搜索</span></button>
+      <button type="button" class="toolbar-button theme-control" id="theme-button" aria-label="外观" hidden>
+        <span class="icon icon-display" aria-hidden="true"></span><span class="icon icon-sun" aria-hidden="true"></span><span class="icon icon-moon" aria-hidden="true"></span>
+      </button>
+    </div>
   </div>
 </header>
+<nav class="guide-toolbar assessment-toolbar" aria-label="自测栏目" hidden>
+  <div class="wrap guide-toolbar-inner">
+    <button type="button" class="toolbar-button directory-button" id="directory-button" aria-controls="guide-rail" aria-expanded="true" hidden><span class="icon icon-directory" aria-hidden="true"></span>目录</button>
+    <a class="guide-name" href="./">ADHD 自测</a>
+    <details class="guide-topics" id="guide-topics" open>
+      <summary class="toolbar-button">栏目<span class="chevron" aria-hidden="true"></span></summary>
+      <div class="guide-toplinks" id="tabs"></div>
+    </details>
+  </div>
+</nav>
 <main id="main" class="wrap assessment">
   <noscript><p class="card">请启用 JavaScript，以便在浏览器里完成作答和生成报告。</p></noscript>
 
 
   <!-- ================= 首页 ================= -->
   <section class="screen" id="s-home">
-    <h1 class="home-title" tabindex="-1">ADHD 自测</h1>
-    <div class="home-progress">
-      <div class="progress-row"><span>整体进度</span><strong id="home-progress-text"></strong></div>
-      <div class="bar"><progress class="visually-hidden" id="home-progress" aria-label="已完成量表数" value="0"></progress></div>
+    <div class="wrap guide-layout" id="guide-layout" data-search-unit="项量表">
+      <aside class="guide-rail" id="guide-rail" aria-label="量表目录">
+        <div class="rail-sticky" id="rail-sticky">
+          <div class="guide-navigator" id="guide-navigator">
+            <div class="guide-filter" id="guide-filter" hidden>
+              <span class="icon icon-search" aria-hidden="true"></span>
+              <input id="guide-search" type="search" placeholder="搜索量表" aria-label="搜索量表" autocomplete="off" aria-controls="guide-tree">
+              <kbd aria-hidden="true">/</kbd>
+            </div>
+            <p id="search-status" class="filter-status" role="status"></p>
+            <nav class="guide-tree" id="guide-tree" aria-label="量表"></nav>
+          </div>
+        </div>
+      </aside>
+      <div class="assessment-overview">
+        <h1 class="home-title" tabindex="-1">ADHD 自测</h1>
+        <div class="home-progress">
+          <div class="progress-row"><span>整体进度</span><strong id="home-progress-text"></strong></div>
+          <div class="bar"><progress class="visually-hidden" id="home-progress" aria-label="已完成量表数" value="0"></progress></div>
+        </div>
+        <div id="entry-list"></div>
+        <div class="report-list">
+          <div id="comp-slot"></div>
+        </div>
+        <div class="home-tools">
+          <button class="btn btn-ghost" id="export-report" onclick="showReportImage()">导出报告图片</button>
+          <details class="quiet-details" id="home-more" hidden>
+            <summary>更多操作</summary>
+            <button class="btn btn-ghost" onclick="resetTest()">清除本机进度</button>
+          </details>
+        </div>
+        <p class="home-note">进度仅保存在当前浏览器。自测结果仅供初筛参考。</p>
+      </div>
     </div>
-    <div class="tabs" id="tabs" role="group" aria-label="量表分类"></div>
-    <section class="scale-section" aria-labelledby="scale-heading">
-      <h2 id="scale-heading" class="visually-hidden"></h2>
-      <ul class="entry-list" id="entry-list" role="list"></ul>
-    </section>
-    <div class="report-list">
-      <div id="tab-report-slot"></div>
-      <div id="comp-slot"></div>
-    </div>
-    <div class="home-tools">
-      <button class="btn btn-ghost" id="export-report" onclick="showReportImage()">导出报告图片</button>
-      <details class="quiet-details" id="home-more" hidden>
-        <summary>更多操作</summary>
-        <button class="btn btn-ghost" onclick="resetTest()">清除本机进度</button>
-      </details>
-    </div>
-    <p class="home-note">进度仅保存在当前浏览器。自测结果仅供初筛参考。</p>
   </section>
 
   <!-- ================= 引导页 ================= -->
@@ -164,6 +192,10 @@ openLegacyGuideSection();
     </details>
   </section>
 </main>
+<dialog class="guide-drawer" id="guide-drawer" aria-labelledby="drawer-title">
+  <div class="drawer-head"><h2 id="drawer-title">量表目录</h2><form method="dialog"><button type="submit" class="toolbar-button" aria-label="关闭目录" autofocus><span class="icon icon-close" aria-hidden="true"></span></button></form></div>
+  <div class="drawer-body" id="drawer-body"></div>
+</dialog>
 <footer class="site-footer">
   <div class="wrap footer-line">
     <a href="https://github.com/LukeSONG2000/adhd-helper">项目源码</a>
@@ -1110,57 +1142,80 @@ function summaryOf(mod, r) {
 /* =====================================================================
  * 5. 首页（Tab + 入口卡片）
  * ===================================================================== */
-let activeTab = TABS.some(t => t.id === state.tab) ? state.tab : "core";
+let homeSection = "";
+let homeScroll = 0;
 
-function renderTabs() {
+function renderTabs(selected = "") {
   const tabs = document.getElementById("tabs");
-  const focusInside = tabs.contains(document.activeElement);
-  tabs.innerHTML = TABS.map(t => {
-    const done = tabDoneCount(t.id);
-    const all = tabModules(t.id).length;
-    const current = t.id === activeTab;
-    return `<button type="button" class="tab" aria-pressed="${current}" aria-controls="entry-list" onclick="switchTab('${t.id}')">
-      <span>${t.name}</span><span class="tab-count">${done}/${all}</span>
-    </button>`;
-  }).join("");
-  if (focusInside) tabs.querySelector('[aria-pressed="true"]').focus({ preventScroll: true });
+  if (!tabs.firstElementChild) {
+    const sections = [{ id: "", name: "总览" }, ...TABS];
+    tabs.innerHTML = sections.map(t => `<a href="#${t.id ? `module-${t.id}` : "s-home"}" data-module="${t.id}" onclick="event.preventDefault(); switchTab('${t.id}')">${t.name}</a>`).join("");
+  }
+  for (const link of tabs.children) {
+    if (link.dataset.module === selected) link.setAttribute("aria-current", "location");
+    else link.removeAttribute("aria-current");
+  }
 }
 
-function switchTab(id) {
-  activeTab = id;
-  state.tab = id;
-  saveState();
-  renderTabs();
-  renderEntries();
-  fadeIn(document.getElementById("entry-list"));
+function switchTab(id, scroll = true) {
+  if (id) {
+    state.tab = id;
+    saveState();
+  }
+  homeSection = id;
+  renderTabs(homeSection);
+  if (scroll) {
+    if (!id) window.scrollTo(0, 0);
+    else document.getElementById(`module-${id}`).scrollIntoView();
+  }
 }
 
 function renderEntries() {
-  const list = tabModules(activeTab);
-  document.getElementById("scale-heading").textContent = TABS.find(t => t.id === activeTab).name;
-  const cards = list.map(m => {
-    const result = currentResult(m);
-    const index = MODULES.indexOf(m);
-    const count = answeredCount(m);
-    const details = result ? summaryOf(m, result).split(" | ")
-      : count > 0 ? [`已答 ${count} / ${m.items.length} 题`]
-      : [`${m.items.length} 题 · 约 ${m.time} 分钟`];
-    const action = result ? "查看结果" : count > 0 ? "继续" : "开始";
-    const open = result ? `viewResult('${m.id}')` : `openGuide(${index})`;
-    return `<li>
-      <button class="entry${result ? " complete" : ""}" type="button" onclick="${open}" aria-labelledby="scale-${m.id} action-${m.id}" aria-describedby="purpose-${m.id} detail-${m.id}">
-        <span class="entry-title" id="scale-${m.id}">${m.name}</span>
-        <span class="entry-purpose" id="purpose-${m.id}">${escapeHtml(m.desc)}</span>
-        <span class="entry-foot">
-          <span class="entry-summary" id="detail-${m.id}">${details.map(text => `<span>${escapeHtml(text)}</span>`).join("")}</span>
-          <span class="entry-action" id="action-${m.id}">${action}</span>
-        </span>
-      </button>
-    </li>`;
-  }).join("");
+  const sections = TABS.map(t => {
+    const cards = tabModules(t.id).map(homeEntry).join("");
+    return `<section class="scale-section" id="module-${t.id}" aria-labelledby="module-title-${t.id}">
+      <h2 id="module-title-${t.id}">${t.name}</h2>
+      <ul class="entry-list" role="list">${cards}</ul>
+      ${tabReportCard(t.id)}
+    </section>`;
+  });
+  document.getElementById("entry-list").innerHTML = sections.join("");
+}
 
-  document.getElementById("entry-list").innerHTML = cards;
-  document.getElementById("tab-report-slot").innerHTML = tabReportCard(activeTab);
+function homeEntry(m) {
+  const result = currentResult(m);
+  const index = MODULES.indexOf(m);
+  const count = answeredCount(m);
+  const details = result ? summaryOf(m, result).split(" | ")
+    : count > 0 ? [`已答 ${count} / ${m.items.length} 题`]
+    : [`${m.items.length} 题 · 约 ${m.time} 分钟`];
+  const action = result ? "查看结果" : count > 0 ? "继续" : "开始";
+  return `<li>
+    <button class="entry${result ? " complete" : ""}" type="button" onclick="openHomeScale(${index})" aria-labelledby="scale-${m.id} action-${m.id}" aria-describedby="purpose-${m.id} detail-${m.id}">
+      <span class="entry-title" id="scale-${m.id}">${m.name}</span>
+      <span class="entry-purpose" id="purpose-${m.id}">${escapeHtml(m.desc)}</span>
+      <span class="entry-foot">
+        <span class="entry-summary" id="detail-${m.id}">${details.map(text => `<span>${escapeHtml(text)}</span>`).join("")}</span>
+        <span class="entry-action" id="action-${m.id}">${action}</span>
+      </span>
+    </button>
+  </li>`;
+}
+
+function renderAssessmentDirectory() {
+  const activeTab = TABS.some(t => t.id === state.tab) ? state.tab : "core";
+  document.getElementById("guide-tree").innerHTML = TABS.map(t => {
+    const links = tabModules(t.id).map(m => `<a class="tree-link" href="#scale-${m.id}" data-note="${m.id}" data-search="${escapeHtml(m.name)} ${escapeHtml(m.desc)} ${t.name}" onclick="event.preventDefault(); openHomeScale(${MODULES.indexOf(m)})">${m.name}</a>`).join("");
+    return `<details class="tree-group"${t.id === activeTab ? " open" : ""}><summary>${t.name}</summary><div class="tree-links">${links}</div></details>`;
+  }).join("");
+}
+
+function openHomeScale(index) {
+  const mod = MODULES[index];
+  document.getElementById("guide-drawer").close();
+  switchTab(mod.tab, false);
+  if (currentResult(mod)) viewResult(mod.id);
+  else openGuide(index);
 }
 
 /* 每个 Tab 底部的本模块汇总报告入口 */
@@ -1217,7 +1272,7 @@ function renderCompSlot() {
 
 function showHome(moveFocus = true) {
   renderHomeProgress();
-  renderTabs();
+  renderTabs(homeSection);
   renderEntries();
   renderCompSlot();
   const hasResults = MODULES.some(m => state.results[m.id]);
@@ -1249,10 +1304,14 @@ function cancelAnswerAdvance() {
 
 function switchScreen(id, moveFocus = true) {
   cancelAnswerAdvance();
+  const onHome = id === "s-home";
+  if (!onHome && document.getElementById("s-home").classList.contains("active")) homeScroll = window.scrollY;
   const target = document.getElementById(id);
   const entering = !target.classList.contains("active");
   document.querySelectorAll(".screen").forEach(screen => screen.classList.toggle("active", screen === target));
-  window.scrollTo(0, 0);
+  document.querySelector(".assessment-toolbar").hidden = !onHome;
+  document.getElementById("search-trigger").hidden = !onHome;
+  window.scrollTo(0, onHome && moveFocus ? homeScroll : 0);
   if (moveFocus) {
     target.querySelector("h1, h2").focus({ preventScroll: true });
     if (entering) fadeIn(target);
@@ -1755,8 +1814,8 @@ function openTabReport(tabId) {
     setNextAction("tr-next-module", "tr-home", "查看综合报告", showComprehensive);
   } else if (nextTab) {
     setNextAction("tr-next-module", "tr-home", `继续 ${nextTab.name}`, () => {
-      switchTab(nextTab.id);
       showHome();
+      switchTab(nextTab.id);
     });
   } else {
     setNextAction("tr-next-module", "tr-home", "返回量表目录", showHome);
@@ -1779,7 +1838,7 @@ function showPendingReport(title, scales) {
   const button = document.getElementById("l-btn");
   button.textContent = answeredCount(next) ? "继续作答" : "开始下一项";
   button.onclick = () => {
-    switchTab(next.tab);
+    switchTab(next.tab, false);
     openGuide(MODULES.indexOf(next));
   };
   switchScreen("s-locked");
@@ -2041,7 +2100,8 @@ function resetTest() {
   state.results = {};
   state.tabReports = {};
   state.tab = "core";
-  activeTab = "core";
+  homeSection = "";
+  homeScroll = 0;
   saveState();
   showHome();
 }
@@ -2050,12 +2110,13 @@ function resetTest() {
  * 9. 工具 & 启动
  * ===================================================================== */
 function escapeHtml(s) {
-  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
 /* 首次加载：校准各 Tab 模块报告状态并恢复进度 */
 syncTabReports();
 saveState();
+renderAssessmentDirectory();
 showHome(false);
 </script>
 </body>
