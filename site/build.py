@@ -22,7 +22,6 @@ ASSET_URLS = {
 }
 REPOSITORY = "https://github.com/LukeSONG2000/adhd-helper"
 GUIDE_PAGE = "guide.html"
-UPSTREAM = "https://github.com/ZHCstudio/adhd-test"
 SECTIONS = {
     "action": "行动指南运用篇",
     "foundations": "底层系统构建篇",
@@ -92,26 +91,25 @@ def shell(title, content, groups, start, base="", current=None):
 </head>
 <body class="guide-page">
   <a class="skip-link" href="#main">跳到正文</a>
-  <header class="site-header">
+  <header class="site-header" id="top" tabindex="-1">
     <div class="wrap header-line">
       <a class="wordmark" href="{base or './'}"><span class="mark" aria-hidden="true"></span>ADHD Helper</a>
       <div class="header-tools">
-        <nav aria-label="主导航"><a href="{base or './'}">自测</a><a href="{base}{GUIDE_PAGE}" aria-current="page">指南</a></nav>
-        <button type="button" class="toolbar-button guide-search-button" id="search-trigger" aria-label="搜索指南" hidden><span class="icon icon-search" aria-hidden="true"></span><span class="toolbar-label" aria-hidden="true">搜索</span></button>
+        <a class="github-link" href="{REPOSITORY}">GitHub</a>
         {appearance_button()}
       </div>
     </div>
   </header>
-  <nav class="guide-toolbar" aria-label="指南栏目">
+  <div class="guide-toolbar">
     <div class="wrap guide-toolbar-inner">
       <button type="button" class="toolbar-button directory-button" id="directory-button" aria-controls="guide-rail" aria-expanded="true" hidden><span class="icon icon-directory" aria-hidden="true"></span>目录</button>
-      <a class="guide-name" href="{base}{GUIDE_PAGE}#library">人生设计指南</a>
+      <nav class="site-sections" aria-label="主导航"><a href="{base or './'}">自测</a><a href="{base}{GUIDE_PAGE}" aria-current="page">指南</a></nav>
       <details class="guide-topics" id="guide-topics" open>
         <summary class="toolbar-button">栏目<span class="chevron" aria-hidden="true"></span></summary>
         <div class="guide-toplinks">{''.join(section_links)}</div>
       </details>
     </div>
-  </nav>
+  </div>
   <div class="wrap guide-layout" id="guide-layout" data-search-unit="篇">
     <aside class="guide-rail" id="guide-rail" aria-label="指南目录">
       <div class="rail-sticky" id="rail-sticky">
@@ -125,7 +123,7 @@ def shell(title, content, groups, start, base="", current=None):
     <div class="drawer-body" id="drawer-body"></div>
   </dialog>
   <footer class="site-footer">
-    <div class="wrap footer-line"><a href="{REPOSITORY}">项目源码</a><a href="{UPSTREAM}">自测题库来源：ZHCstudio/adhd-test</a></div>
+    <div class="wrap footer-line"><a href="#top">回到顶部</a></div>
   </footer>
 </body>
 </html>

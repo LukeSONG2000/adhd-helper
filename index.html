@@ -23,28 +23,27 @@ openLegacyGuideSection();
 </head>
 <body class="assessment-page">
 <a class="skip-link" href="#main">跳到正文</a>
-<header class="site-header">
+<header class="site-header" id="top" tabindex="-1">
   <div class="wrap header-line">
     <a class="wordmark" href="./"><span class="mark" aria-hidden="true"></span>ADHD Helper</a>
     <div class="header-tools">
-      <nav aria-label="主导航"><a href="./" aria-current="page">自测</a><a href="./guide.html">指南</a></nav>
-      <button type="button" class="toolbar-button guide-search-button" id="search-trigger" aria-label="搜索量表" hidden><span class="icon icon-search" aria-hidden="true"></span><span class="toolbar-label" aria-hidden="true">搜索</span></button>
+      <a class="github-link" href="https://github.com/LukeSONG2000/adhd-helper">GitHub</a>
       <button type="button" class="toolbar-button theme-control" id="theme-button" aria-label="外观" hidden>
         <span class="icon icon-display" aria-hidden="true"></span><span class="icon icon-sun" aria-hidden="true"></span><span class="icon icon-moon" aria-hidden="true"></span>
       </button>
     </div>
   </div>
 </header>
-<nav class="guide-toolbar assessment-toolbar" aria-label="自测栏目" hidden>
+<div class="guide-toolbar assessment-toolbar">
   <div class="wrap guide-toolbar-inner">
     <button type="button" class="toolbar-button directory-button" id="directory-button" aria-controls="guide-rail" aria-expanded="true" hidden><span class="icon icon-directory" aria-hidden="true"></span>目录</button>
-    <a class="guide-name" href="./">ADHD 自测</a>
+    <nav class="site-sections" aria-label="主导航"><a href="./" aria-current="page">自测</a><a href="./guide.html">指南</a></nav>
     <details class="guide-topics" id="guide-topics" open>
       <summary class="toolbar-button">栏目<span class="chevron" aria-hidden="true"></span></summary>
       <div class="guide-toplinks" id="tabs"></div>
     </details>
   </div>
-</nav>
+</div>
 <main id="main" class="wrap assessment">
   <noscript><p class="card">请启用 JavaScript，以便在浏览器里完成作答和生成报告。</p></noscript>
 
@@ -198,8 +197,7 @@ openLegacyGuideSection();
 </dialog>
 <footer class="site-footer">
   <div class="wrap footer-line">
-    <a href="https://github.com/LukeSONG2000/adhd-helper">项目源码</a>
-    <a href="https://github.com/ZHCstudio/adhd-test">题库与报告来源：ZHCstudio/adhd-test</a>
+    <a href="#top">回到顶部</a>
   </div>
 </footer>
 
@@ -1309,8 +1307,8 @@ function switchScreen(id, moveFocus = true) {
   const target = document.getElementById(id);
   const entering = !target.classList.contains("active");
   document.querySelectorAll(".screen").forEach(screen => screen.classList.toggle("active", screen === target));
-  document.querySelector(".assessment-toolbar").hidden = !onHome;
-  document.getElementById("search-trigger").hidden = !onHome;
+  document.getElementById("directory-button").hidden = !onHome || !document.body.hasAttribute("data-directory-ready");
+  document.getElementById("guide-topics").hidden = !onHome;
   window.scrollTo(0, onHome && moveFocus ? homeScroll : 0);
   if (moveFocus) {
     target.querySelector("h1, h2").focus({ preventScroll: true });

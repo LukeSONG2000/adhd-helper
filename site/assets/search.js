@@ -8,7 +8,6 @@
   const drawer = document.getElementById("guide-drawer");
   const drawerBody = document.getElementById("drawer-body");
   const toggle = document.getElementById("directory-button");
-  const search = document.getElementById("search-trigger");
   const input = document.getElementById("guide-search");
   const status = document.getElementById("search-status");
   const topics = document.getElementById("guide-topics");
@@ -75,7 +74,6 @@
     input.focus();
   }
 
-  search.addEventListener("click", focusSearch);
   drawer.addEventListener("close", syncDock);
   drawer.addEventListener("click", event => {
     if (event.target === drawer) drawer.close();
@@ -90,7 +88,7 @@
       topics.querySelector("summary").focus();
     }
     if (event.key !== "/" || event.ctrlKey || event.metaKey || event.altKey ||
-      toolbar.hidden || event.target.closest("input, textarea, select, [contenteditable]")) return;
+      toggle.hidden || event.target.closest("input, textarea, select, [contenteditable]")) return;
     event.preventDefault();
     focusSearch();
   });
@@ -172,7 +170,6 @@
   syncDock();
   document.body.dataset.directoryReady = "";
   toggle.hidden = false;
-  search.hidden = false;
   document.getElementById("guide-filter").hidden = false;
   showActiveLink();
   syncSurface();
