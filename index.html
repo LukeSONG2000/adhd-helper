@@ -36,7 +36,10 @@ openLegacyGuideSection();
   <!-- ================= 首页 ================= -->
   <section class="screen" id="s-home">
     <h1 class="home-title" tabindex="-1">ADHD 自测</h1>
-    <div class="home-progress" id="home-progress"></div>
+    <div class="home-progress">
+      <div class="progress-row"><span>整体进度</span><strong id="home-progress-text"></strong></div>
+      <div class="bar"><progress class="visually-hidden" id="home-progress" aria-label="已完成量表数" value="0"></progress></div>
+    </div>
     <div class="tabs" id="tabs" role="group" aria-label="量表分类"></div>
     <section class="scale-section" aria-labelledby="scale-heading">
       <h2 id="scale-heading" class="visually-hidden"></h2>
@@ -77,9 +80,9 @@ openLegacyGuideSection();
         <span id="q-scope"></span>
         <span id="q-position"></span>
       </div>
-      <progress class="bar" id="q-bar" aria-label="本量表已答题数"></progress>
+      <div class="bar"><progress class="visually-hidden" id="q-bar" aria-label="本量表已答题数" value="0"></progress></div>
     </div>
-    <div class="card q-card">
+    <div class="card q-card" id="q-card">
       <h2 tabindex="-1" class="q-text" id="q-text"></h2>
       <div class="q-hint" id="q-hint" hidden></div>
       <div class="options" id="options" role="group" aria-labelledby="q-text"></div>
@@ -1129,6 +1132,7 @@ function switchTab(id) {
   saveState();
   renderTabs();
   renderEntries();
+  fadeIn(document.getElementById("entry-list"));
 }
 
 function renderEntries() {
@@ -1187,9 +1191,17 @@ function tabReportCard(tabId) {
 function renderHomeProgress() {
   const done = MODULES.filter(m => state.results[m.id]).length;
   const total = MODULES.length;
-  document.getElementById("home-progress").innerHTML = `
-    <div class="progress-row"><span>整体进度</span><strong>已完成 ${done} / ${total} 项</strong></div>
-    <progress class="bar" aria-label="已完成量表数" max="${total}" value="${done}"></progress>`;
+  document.getElementById("home-progress-text").textContent = `已完成 ${done} / ${total} 项`;
+  updateProgress("home-progress", done, total);
+}
+
+function updateProgress(id, value, total) {
+  const progress = document.getElementById(id);
+  const bar = progress.parentElement;
+  bar.style.setProperty("--previous-progress", `${progress.position * 100}%`);
+  progress.max = total;
+  progress.value = value;
+  bar.style.setProperty("--progress", `${progress.position * 100}%`);
 }
 
 function renderCompSlot() {
@@ -1221,11 +1233,30 @@ function showHome(moveFocus = true) {
  * ===================================================================== */
 let curMod = null;
 let curQ = 0;
+let answerAdvance = null;
+const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+
+function fadeIn(element) {
+  if (!reducedMotion.matches && typeof element.animate === "function") {
+    element.animate([{ opacity: .76 }, { opacity: 1 }], { duration: 170, easing: "ease-out" });
+  }
+}
+
+function cancelAnswerAdvance() {
+  clearTimeout(answerAdvance);
+  answerAdvance = null;
+}
 
 function switchScreen(id, moveFocus = true) {
-  document.querySelectorAll(".screen").forEach(screen => screen.classList.toggle("active", screen.id === id));
+  cancelAnswerAdvance();
+  const target = document.getElementById(id);
+  const entering = !target.classList.contains("active");
+  document.querySelectorAll(".screen").forEach(screen => screen.classList.toggle("active", screen === target));
   window.scrollTo(0, 0);
-  if (moveFocus) document.querySelector(`#${id} h1, #${id} h2`).focus({ preventScroll: true });
+  if (moveFocus) {
+    target.querySelector("h1, h2").focus({ preventScroll: true });
+    if (entering) fadeIn(target);
+  }
 }
 
 function openGuide(idx) {
@@ -1273,9 +1304,7 @@ function renderQuestion() {
   const mod = curMod, total = mod.items.length;
   document.getElementById("q-scope").textContent = mod.guide.focus;
   document.getElementById("q-position").textContent = `第 ${curQ + 1} / ${total} 题`;
-  const progress = document.getElementById("q-bar");
-  progress.max = total;
-  progress.value = answeredCount(mod);
+  updateProgress("q-bar", answeredCount(mod), total);
 
   const text = mod.items[curQ];
   document.getElementById("q-text").textContent = typeof text === "string" ? text : text.q;
@@ -1296,27 +1325,39 @@ function renderQuestion() {
     button.className = "opt";
     button.textContent = text;
     if (a[curQ] === value) button.setAttribute("aria-current", "true");
-    button.addEventListener("click", () => selectAnswer(value));
+    button.addEventListener("click", () => selectAnswer(value, button));
     wrap.appendChild(button);
   });
   document.getElementById("q-back").disabled = curQ === 0;
 }
 
-function selectAnswer(value) {
-  const answers = answersOf(curMod);
+function selectAnswer(value, button) {
+  if (answerAdvance !== null) return;
+  const mod = curMod;
+  const answers = answersOf(mod);
   answers[curQ] = value;
   const unanswered = answers.findIndex(answer => answer == null);
-  if (unanswered < 0) {
-    finishQuiz();
-    return;
-  }
+  if (unanswered < 0) state.results[mod.id] = resultOf(mod);
   saveState();
-  curQ = unanswered;
-  showQuestion();
+
+  button.parentElement.querySelector("[aria-current]")?.removeAttribute("aria-current");
+  button.setAttribute("aria-current", "true");
+  updateProgress("q-bar", answeredCount(mod), mod.items.length);
+  // 留出短暂的选中反馈，避免切题时把高亮立即抹掉。
+  answerAdvance = setTimeout(() => {
+    answerAdvance = null;
+    if (unanswered < 0) {
+      viewResult(mod.id);
+      return;
+    }
+    curQ = unanswered;
+    showQuestion();
+  }, 180);
 }
 
 function goBack() {
   if (curQ === 0) return;
+  cancelAnswerAdvance();
   curQ -= 1;
   showQuestion();
 }
@@ -1324,15 +1365,7 @@ function goBack() {
 function showQuestion() {
   renderQuestion();
   document.getElementById("q-text").focus();
-}
-
-function finishQuiz() {
-  const mod = curMod;
-  const r = resultOf(mod);
-  state.results[mod.id] = r;
-  saveState();
-  renderResult(mod, r);
-  switchScreen("s-result");
+  fadeIn(document.getElementById("q-card"));
 }
 
 /* =====================================================================

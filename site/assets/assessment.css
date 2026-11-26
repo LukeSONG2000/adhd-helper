@@ -30,6 +30,12 @@
 :where(.assessment button, .assessment input) { font: inherit; }
 .assessment button { cursor: pointer; }
 .assessment button:disabled { cursor: default; }
+.assessment :is(.btn, .entry, .tab, .tab-report, .comp-entry, .back-btn, .opt) {
+  transition: transform .09s ease-out;
+}
+.assessment :is(.btn, .entry, .tab, .tab-report, .comp-entry, .back-btn, .opt):not(:disabled):active {
+  transform: scale(.98);
+}
 .assessment :is(h1, h2)[tabindex="-1"]:focus { outline: none; }
 .assessment .visually-hidden {
   position: absolute;
@@ -104,18 +110,23 @@
 }
 .assessment .progress-row strong { color: var(--ink); font-variant-numeric: tabular-nums; }
 .assessment .bar {
-  display: block;
-  appearance: none;
   inline-size: 100%;
   block-size: .42rem;
   background: var(--line);
-  color: var(--link);
-  border: 0;
   border-radius: 999px;
 }
-.assessment progress::-webkit-progress-bar { background: var(--line); border-radius: 999px; }
-.assessment progress::-webkit-progress-value { background: var(--link); border-radius: 999px; }
-.assessment progress::-moz-progress-bar { background: var(--link); border-radius: 999px; }
+.assessment .bar::after {
+  content: "";
+  display: block;
+  inline-size: var(--progress, 0%);
+  block-size: 100%;
+  background: var(--link);
+  border-radius: inherit;
+  transition: inline-size .18s ease-out;
+}
+@starting-style {
+  .assessment .home-progress .bar::after { inline-size: var(--previous-progress, 0%); }
+}
 
 .assessment .tabs {
   display: grid;
@@ -305,6 +316,7 @@
   font: inherit;
   text-align: start;
   cursor: pointer;
+  transition: transform .09s ease-out, background-color .12s, border-color .12s;
 }
 .assessment .opt:is(:hover, :active) { background: var(--subtle); }
 .assessment .opt[aria-current] { background: var(--accent-surface); border-color: var(--link); }
@@ -316,6 +328,7 @@
   block-size: 1.12rem;
   border: 1px solid var(--muted);
   border-radius: 50%;
+  transition: background-color .12s, border-color .12s;
 }
 .assessment .opt[aria-current]::before {
   border-color: var(--link);
@@ -383,5 +396,9 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .assessment *, .img-save-card { scroll-behavior: auto !important; transition: none !important; }
+  .assessment *, .assessment *::before, .assessment *::after, .img-save-card {
+    scroll-behavior: auto !important;
+    transition: none !important;
+  }
+  .assessment button:active { transform: none !important; }
 }
