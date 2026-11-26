@@ -10,11 +10,9 @@
   const toggle = document.getElementById("directory-button");
   const input = document.getElementById("guide-search");
   const status = document.getElementById("search-status");
-  const topics = document.getElementById("guide-topics");
   const toolbar = document.querySelector(".guide-toolbar");
   const masthead = document.querySelector(".site-header");
   const narrow = matchMedia("(max-width: 63.999rem)");
-  const compact = matchMedia("(max-width: 45.999rem)");
   const key = "adhd-directory-collapsed";
   let collapsed = false;
   try { collapsed = sessionStorage.getItem(key) === "true"; } catch {}
@@ -42,7 +40,6 @@
   }
 
   function showDrawer() {
-    if (compact.matches) topics.open = false;
     positionDrawer();
     if (!drawer.open) drawer.showModal();
     toggle.setAttribute("aria-expanded", "true");
@@ -75,6 +72,15 @@
   }
 
   drawer.addEventListener("close", syncDock);
+  tree.addEventListener("click", event => {
+    if (drawer.open && event.target.closest("a") && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) drawer.close();
+  }, { capture: true });
+  document.addEventListener("directory-selection", showActiveLink);
+  document.querySelector('.site-footer a[href="#top"]').addEventListener("click", event => {
+    event.preventDefault();
+    window.scrollTo(0, 0);
+    masthead.focus({ preventScroll: true });
+  });
   drawer.addEventListener("click", event => {
     if (event.target === drawer) drawer.close();
   });
@@ -83,10 +89,6 @@
     showActiveLink();
   });
   document.addEventListener("keydown", event => {
-    if (event.key === "Escape" && compact.matches && topics.open) {
-      topics.open = false;
-      topics.querySelector("summary").focus();
-    }
     if (event.key !== "/" || event.ctrlKey || event.metaKey || event.altKey ||
       toggle.hidden || event.target.closest("input, textarea, select, [contenteditable]")) return;
     event.preventDefault();
@@ -131,31 +133,8 @@
 
   if (document.body.classList.contains("guide-page")) {
     input.addEventListener("focus", loadIndex, { once: true });
-    if (document.querySelector(".guide-library")) {
-      const links = topics.querySelectorAll("[data-section]");
-      const highlightSection = () => {
-        const key = location.hash.slice(1);
-        const target = Array.from(links).find(link => link.dataset.section === key) ?? links[0];
-        for (const link of links) {
-          if (link === target) link.setAttribute("aria-current", "location");
-          else link.removeAttribute("aria-current");
-        }
-      };
-      window.addEventListener("hashchange", highlightSection);
-      highlightSection();
-    }
   }
   input.addEventListener("input", filter);
-
-  const syncTopics = () => { topics.open = !compact.matches; };
-  topics.addEventListener("click", event => {
-    if (compact.matches && event.target.closest("a")) topics.open = false;
-  });
-  document.addEventListener("pointerdown", event => {
-    if (compact.matches && topics.open && !toolbar.contains(event.target)) topics.open = false;
-  });
-  compact.addEventListener("change", syncTopics);
-  syncTopics();
 
   function syncSurface() {
     const top = parseFloat(getComputedStyle(toolbar).top);

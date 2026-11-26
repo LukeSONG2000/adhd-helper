@@ -12,4 +12,6 @@ python3 site/build.py
 python3 -m http.server 8000 --directory _site
 ```
 
+构建后也可直接用浏览器打开 `_site/index.html`。
+
 指南笔记位于 `guide/ADHD人生设计指南/`。更新笔记后同步更新全文 Markdown。推送到 `main` 后，GitHub Actions 会构建并发布更新。

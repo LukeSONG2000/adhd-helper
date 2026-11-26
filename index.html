@@ -25,9 +25,9 @@ openLegacyGuideSection();
 <a class="skip-link" href="#main">跳到正文</a>
 <header class="site-header" id="top" tabindex="-1">
   <div class="wrap header-line">
-    <a class="wordmark" href="./"><span class="mark" aria-hidden="true"></span>ADHD Helper</a>
+    <a class="wordmark" href="./index.html"><span class="mark" aria-hidden="true"></span>ADHD Helper</a>
     <div class="header-tools">
-      <a class="github-link" href="https://github.com/LukeSONG2000/adhd-helper">GitHub</a>
+      <a class="github-link" href="https://github.com/LukeSONG2000/adhd-helper" aria-label="GitHub" title="GitHub"><img src="site/assets/github.svg" width="20" height="20" alt=""></a>
       <button type="button" class="toolbar-button theme-control" id="theme-button" aria-label="外观" hidden>
         <span class="icon icon-display" aria-hidden="true"></span><span class="icon icon-sun" aria-hidden="true"></span><span class="icon icon-moon" aria-hidden="true"></span>
       </button>
@@ -37,20 +37,14 @@ openLegacyGuideSection();
 <div class="guide-toolbar assessment-toolbar">
   <div class="wrap guide-toolbar-inner">
     <button type="button" class="toolbar-button directory-button" id="directory-button" aria-controls="guide-rail" aria-expanded="true" hidden><span class="icon icon-directory" aria-hidden="true"></span>目录</button>
-    <nav class="site-sections" aria-label="主导航"><a href="./" aria-current="page">自测</a><a href="./guide.html">指南</a></nav>
-    <details class="guide-topics" id="guide-topics" open>
-      <summary class="toolbar-button">栏目<span class="chevron" aria-hidden="true"></span></summary>
-      <div class="guide-toplinks" id="tabs"></div>
-    </details>
+    <nav class="site-sections" aria-label="主导航"><a href="./index.html" aria-current="page">自测</a><a href="./guide.html">指南</a></nav>
   </div>
 </div>
 <main id="main" class="wrap assessment">
   <noscript><p class="card">请启用 JavaScript，以便在浏览器里完成作答和生成报告。</p></noscript>
 
 
-  <!-- ================= 首页 ================= -->
-  <section class="screen" id="s-home">
-    <div class="wrap guide-layout" id="guide-layout" data-search-unit="项量表">
+  <div class="wrap guide-layout" id="guide-layout" data-search-unit="项量表">
       <aside class="guide-rail" id="guide-rail" aria-label="量表目录">
         <div class="rail-sticky" id="rail-sticky">
           <div class="guide-navigator" id="guide-navigator">
@@ -64,7 +58,9 @@ openLegacyGuideSection();
           </div>
         </div>
       </aside>
-      <div class="assessment-overview">
+    <div class="assessment-content">
+      <!-- ================= 首页 ================= -->
+      <section class="screen assessment-overview" id="s-home">
         <h1 class="home-title" tabindex="-1">ADHD 自测</h1>
         <div class="home-progress">
           <div class="progress-row"><span>整体进度</span><strong id="home-progress-text"></strong></div>
@@ -82,9 +78,7 @@ openLegacyGuideSection();
           </details>
         </div>
         <p class="home-note">进度仅保存在当前浏览器。自测结果仅供初筛参考。</p>
-      </div>
-    </div>
-  </section>
+      </section>
 
   <!-- ================= 引导页 ================= -->
   <section class="screen" id="s-guide">
@@ -190,6 +184,8 @@ openLegacyGuideSection();
       <ul class="sec-body pending-list" id="l-body"></ul>
     </details>
   </section>
+    </div>
+  </div>
 </main>
 <dialog class="guide-drawer" id="guide-drawer" aria-labelledby="drawer-title">
   <div class="drawer-head"><h2 id="drawer-title">量表目录</h2><form method="dialog"><button type="submit" class="toolbar-button" aria-label="关闭目录" autofocus><span class="icon icon-close" aria-hidden="true"></span></button></form></div>
@@ -1140,47 +1136,21 @@ function summaryOf(mod, r) {
 /* =====================================================================
  * 5. 首页（Tab + 入口卡片）
  * ===================================================================== */
-let homeSection = "";
 let homeScroll = 0;
-
-function renderTabs(selected = "") {
-  const tabs = document.getElementById("tabs");
-  if (!tabs.firstElementChild) {
-    const sections = [{ id: "", name: "总览" }, ...TABS];
-    tabs.innerHTML = sections.map(t => `<a href="#${t.id ? `module-${t.id}` : "s-home"}" data-module="${t.id}" onclick="event.preventDefault(); switchTab('${t.id}')">${t.name}</a>`).join("");
-  }
-  for (const link of tabs.children) {
-    if (link.dataset.module === selected) link.setAttribute("aria-current", "location");
-    else link.removeAttribute("aria-current");
-  }
-}
-
-function switchTab(id, scroll = true) {
-  if (id) {
-    state.tab = id;
-    saveState();
-  }
-  homeSection = id;
-  renderTabs(homeSection);
-  if (scroll) {
-    if (!id) window.scrollTo(0, 0);
-    else document.getElementById(`module-${id}`).scrollIntoView();
-  }
-}
 
 function renderEntries() {
   const sections = TABS.map(t => {
-    const cards = tabModules(t.id).map(homeEntry).join("");
+    const cards = tabModules(t.id).map((mod, i) => homeEntry(mod, ["steps", "layout", "layers"][i % 3])).join("");
     return `<section class="scale-section" id="module-${t.id}" aria-labelledby="module-title-${t.id}">
       <h2 id="module-title-${t.id}">${t.name}</h2>
-      <ul class="entry-list" role="list">${cards}</ul>
+      <ul class="entry-list guide-cards" role="list">${cards}</ul>
       ${tabReportCard(t.id)}
     </section>`;
   });
   document.getElementById("entry-list").innerHTML = sections.join("");
 }
 
-function homeEntry(m) {
+function homeEntry(m, cover) {
   const result = currentResult(m);
   const index = MODULES.indexOf(m);
   const count = answeredCount(m);
@@ -1189,31 +1159,67 @@ function homeEntry(m) {
     : [`${m.items.length} 题 · 约 ${m.time} 分钟`];
   const action = result ? "查看结果" : count > 0 ? "继续" : "开始";
   return `<li>
-    <button class="entry${result ? " complete" : ""}" type="button" onclick="openHomeScale(${index})" aria-labelledby="scale-${m.id} action-${m.id}" aria-describedby="purpose-${m.id} detail-${m.id}">
-      <span class="entry-title" id="scale-${m.id}">${m.name}</span>
+    <a class="entry guide-card${result ? " complete" : ""}" href="#scale-${m.id}" onclick="followScaleLink(event, ${index})" aria-labelledby="entry-title-${m.id} action-${m.id}" aria-describedby="purpose-${m.id} detail-${m.id}">
+      <span class="guide-cover" data-cover="${cover}" aria-hidden="true"><span><i></i><i></i><i></i></span></span>
+      <span class="entry-title" id="entry-title-${m.id}">${m.name}</span>
       <span class="entry-purpose" id="purpose-${m.id}">${escapeHtml(m.desc)}</span>
       <span class="entry-foot">
         <span class="entry-summary" id="detail-${m.id}">${details.map(text => `<span>${escapeHtml(text)}</span>`).join("")}</span>
         <span class="entry-action" id="action-${m.id}">${action}</span>
       </span>
-    </button>
+    </a>
   </li>`;
 }
 
 function renderAssessmentDirectory() {
   const activeTab = TABS.some(t => t.id === state.tab) ? state.tab : "core";
-  document.getElementById("guide-tree").innerHTML = TABS.map(t => {
-    const links = tabModules(t.id).map(m => `<a class="tree-link" href="#scale-${m.id}" data-note="${m.id}" data-search="${escapeHtml(m.name)} ${escapeHtml(m.desc)} ${t.name}" onclick="event.preventDefault(); openHomeScale(${MODULES.indexOf(m)})">${m.name}</a>`).join("");
-    return `<details class="tree-group"${t.id === activeTab ? " open" : ""}><summary>${t.name}</summary><div class="tree-links">${links}</div></details>`;
+  const sections = TABS.map(t => {
+    const links = tabModules(t.id).map(m => `<a class="tree-link" href="#scale-${m.id}" data-note="${m.id}" data-search="${escapeHtml(m.name)} ${escapeHtml(m.desc)} ${t.name}" onclick="followScaleLink(event, ${MODULES.indexOf(m)})">${m.name}</a>`).join("");
+    return `<details class="tree-group" data-module="${t.id}"${t.id === activeTab ? " open" : ""}><summary>${t.name}</summary><div class="tree-links">${links}</div></details>`;
   }).join("");
+  document.getElementById("guide-tree").innerHTML = `<a class="tree-link" href="./index.html" data-overview onclick="followScaleLink(event)">总览</a>${sections}`;
+}
+
+function followScaleLink(event, index) {
+  if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+  event.preventDefault();
+  if (index === undefined) {
+    document.getElementById("guide-drawer").close();
+    homeScroll = 0;
+    showHome();
+  } else openHomeScale(index);
 }
 
 function openHomeScale(index) {
   const mod = MODULES[index];
   document.getElementById("guide-drawer").close();
-  switchTab(mod.tab, false);
   if (currentResult(mod)) viewResult(mod.id);
   else openGuide(index);
+}
+
+function scaleFromHash() {
+  return byId(location.hash.match(/^#scale-([a-z0-9]+)$/)?.[1]);
+}
+
+function syncScaleSelection(mod) {
+  const tree = document.getElementById("guide-tree");
+  for (const link of tree.querySelectorAll("[aria-current]")) link.removeAttribute("aria-current");
+  const selected = tree.querySelector(mod ? `[data-note="${mod.id}"]` : "[data-overview]");
+  selected.setAttribute("aria-current", "page");
+  if (!mod) return;
+  if (selected.hidden) {
+    const search = document.getElementById("guide-search");
+    search.value = "";
+    search.dispatchEvent(new Event("input"));
+  }
+  selected.closest("details").open = true;
+  const route = `#scale-${mod.id}`;
+  if (location.hash !== route) history.pushState(null, "", route);
+  if (state.tab !== mod.tab) {
+    state.tab = mod.tab;
+    saveState();
+  }
+  document.dispatchEvent(new Event("directory-selection"));
 }
 
 /* 每个 Tab 底部的本模块汇总报告入口 */
@@ -1269,8 +1275,9 @@ function renderCompSlot() {
 }
 
 function showHome(moveFocus = true) {
+  if (scaleFromHash()) history.replaceState(null, "", location.href.split("#")[0]);
+  syncScaleSelection(null);
   renderHomeProgress();
-  renderTabs(homeSection);
   renderEntries();
   renderCompSlot();
   const hasResults = MODULES.some(m => state.results[m.id]);
@@ -1307,8 +1314,6 @@ function switchScreen(id, moveFocus = true) {
   const target = document.getElementById(id);
   const entering = !target.classList.contains("active");
   document.querySelectorAll(".screen").forEach(screen => screen.classList.toggle("active", screen === target));
-  document.getElementById("directory-button").hidden = !onHome || !document.body.hasAttribute("data-directory-ready");
-  document.getElementById("guide-topics").hidden = !onHome;
   window.scrollTo(0, onHome && moveFocus ? homeScroll : 0);
   if (moveFocus) {
     target.querySelector("h1, h2").focus({ preventScroll: true });
@@ -1318,6 +1323,7 @@ function switchScreen(id, moveFocus = true) {
 
 function openGuide(idx) {
   curMod = MODULES[idx];
+  syncScaleSelection(curMod);
   const g = curMod.guide;
   document.getElementById("g-title").textContent = g.title;
   document.getElementById("g-focus").textContent = g.focus;
@@ -1473,6 +1479,7 @@ function viewResult(id) {
   const mod = byId(id), r = state.results[id];
   if (!mod || !r) return;
   curMod = mod;
+  syncScaleSelection(mod);
   renderResult(mod, r);
   switchScreen("s-result");
 }
@@ -1813,7 +1820,8 @@ function openTabReport(tabId) {
   } else if (nextTab) {
     setNextAction("tr-next-module", "tr-home", `继续 ${nextTab.name}`, () => {
       showHome();
-      switchTab(nextTab.id);
+      document.querySelector(`.tree-group[data-module="${nextTab.id}"]`).open = true;
+      document.getElementById(`module-${nextTab.id}`).scrollIntoView();
     });
   } else {
     setNextAction("tr-next-module", "tr-home", "返回量表目录", showHome);
@@ -1836,7 +1844,6 @@ function showPendingReport(title, scales) {
   const button = document.getElementById("l-btn");
   button.textContent = answeredCount(next) ? "继续作答" : "开始下一项";
   button.onclick = () => {
-    switchTab(next.tab, false);
     openGuide(MODULES.indexOf(next));
   };
   switchScreen("s-locked");
@@ -2098,7 +2105,6 @@ function resetTest() {
   state.results = {};
   state.tabReports = {};
   state.tab = "core";
-  homeSection = "";
   homeScroll = 0;
   saveState();
   showHome();
@@ -2115,7 +2121,14 @@ function escapeHtml(s) {
 syncTabReports();
 saveState();
 renderAssessmentDirectory();
-showHome(false);
+const initialScale = scaleFromHash();
+if (initialScale) openHomeScale(MODULES.indexOf(initialScale));
+else showHome(false);
+addEventListener("hashchange", () => {
+  const scale = scaleFromHash();
+  if (scale) openHomeScale(MODULES.indexOf(scale));
+  else if (!location.hash) showHome();
+});
 </script>
 </body>
 </html>

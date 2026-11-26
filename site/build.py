@@ -69,13 +69,6 @@ def load_notes():
 
 def shell(title, content, groups, start, base="", current=None):
     page_title = f"{title} · ADHD Helper"
-    current_section = current.section if current else ""
-    section_links = []
-    for section, label in (("library", "总览"), ("action", "行动"), ("foundations", "系统"), ("toolbox", "工具箱")):
-        target = f"{base}{GUIDE_PAGE}#{section}" if current else f"#{section}"
-        active = (current_section or "library") == section
-        selected = ' aria-current="location"' if active else ""
-        section_links.append(f'<a href="{target}" data-section="{section}"{selected}>{label}</a>')
     return f"""<!doctype html>
 <html lang="zh-CN">
 <head>
@@ -93,9 +86,9 @@ def shell(title, content, groups, start, base="", current=None):
   <a class="skip-link" href="#main">跳到正文</a>
   <header class="site-header" id="top" tabindex="-1">
     <div class="wrap header-line">
-      <a class="wordmark" href="{base or './'}"><span class="mark" aria-hidden="true"></span>ADHD Helper</a>
+      <a class="wordmark" href="{base}index.html"><span class="mark" aria-hidden="true"></span>ADHD Helper</a>
       <div class="header-tools">
-        <a class="github-link" href="{REPOSITORY}">GitHub</a>
+        <a class="github-link" href="{REPOSITORY}" aria-label="GitHub" title="GitHub"><img src="{base}assets/github.svg" width="20" height="20" alt=""></a>
         {appearance_button()}
       </div>
     </div>
@@ -103,11 +96,7 @@ def shell(title, content, groups, start, base="", current=None):
   <div class="guide-toolbar">
     <div class="wrap guide-toolbar-inner">
       <button type="button" class="toolbar-button directory-button" id="directory-button" aria-controls="guide-rail" aria-expanded="true" hidden><span class="icon icon-directory" aria-hidden="true"></span>目录</button>
-      <nav class="site-sections" aria-label="主导航"><a href="{base or './'}">自测</a><a href="{base}{GUIDE_PAGE}" aria-current="page">指南</a></nav>
-      <details class="guide-topics" id="guide-topics" open>
-        <summary class="toolbar-button">栏目<span class="chevron" aria-hidden="true"></span></summary>
-        <div class="guide-toplinks">{''.join(section_links)}</div>
-      </details>
+      <nav class="site-sections" aria-label="主导航"><a href="{base}index.html">自测</a><a href="{base}{GUIDE_PAGE}" aria-current="page">指南</a></nav>
     </div>
   </div>
   <div class="wrap guide-layout" id="guide-layout" data-search-unit="篇">
@@ -134,10 +123,6 @@ def appearance_button():
     return """<button type="button" class="toolbar-button theme-control" id="theme-button" aria-label="外观" hidden>
           <span class="icon icon-display" aria-hidden="true"></span><span class="icon icon-sun" aria-hidden="true"></span><span class="icon icon-moon" aria-hidden="true"></span>
         </button>"""
-
-
-def note_link(note):
-    return f'<a href="{note.url}">{escape(note.title)}</a>'
 
 
 def group_notes(notes):
@@ -170,6 +155,7 @@ def directory_markup(groups, start, base, current):
                 chapters.append(branch(chapter, links, current in matching) if chapter else links)
         parts.append(branch(label, "".join(chapters), active_section == section))
 
+    overview_state = ' aria-current="page"' if current is None else ""
     return f"""<div class="guide-navigator" id="guide-navigator">
       <div class="guide-filter" id="guide-filter" hidden>
         <span class="icon icon-search" aria-hidden="true"></span>
@@ -177,32 +163,39 @@ def directory_markup(groups, start, base, current):
         <kbd aria-hidden="true">/</kbd>
       </div>
       <p id="search-status" class="filter-status" role="status"></p>
-      <nav class="guide-tree" id="guide-tree" aria-label="章节">{link(start)}{''.join(parts)}</nav>
+      <nav class="guide-tree" id="guide-tree" aria-label="章节"><a class="tree-link" href="{base}{GUIDE_PAGE}"{overview_state}>总览</a>{link(start)}{''.join(parts)}</nav>
     </div>"""
 
 
-def build_library(groups, start):
+def note_cards(notes, compact=False):
+    styles = ("steps", "layout", "layers")
+    cards = []
+    for index, note in enumerate(notes):
+        cover = ""
+        if not compact:
+            style = styles[index % len(styles)]
+            cover = f'<span class="guide-cover" data-cover="{style}" aria-hidden="true"><span><i></i><i></i><i></i></span></span>'
+        cards.append(f'<a href="{note.url}" class="guide-card">{cover}<span>{escape(note.title)}</span></a>')
+    size = " compact-cards" if compact else ""
+    return f'<div class="guide-cards{size}">{"".join(cards)}</div>'
 
+
+def build_library(groups, start):
     parts = []
     for section, label in SECTIONS.items():
         group_blocks = []
-        for chapter, matching in groups[section].items():
-            featured = matching[:3] if section == "action" else []
-            cards = "".join(
-                f'<a href="{note.url}" class="guide-card"><span class="guide-cover" data-cover="{style}" aria-hidden="true"><span><i></i><i></i><i></i></span></span>{escape(note.title)}</a>'
-                for note, style in zip(featured, ("steps", "layout", "layers"))
-            )
-            links = "\n".join(
-                f'<li>{note_link(note)}</li>' for note in matching[len(featured):]
-            )
-            listing = f"<ul>{links}</ul>" if links else ""
-            if cards:
-                more = f'<details class="section-more"><summary>更多行动指南</summary>{listing}</details>' if listing else ""
-                group_blocks.append(f'<div class="guide-cards">{cards}</div>{more}')
+        for position, (chapter, matching) in enumerate(groups[section].items()):
+            if section == "action":
+                group_blocks.append(note_cards(matching[:3]))
+                if len(matching) > 3:
+                    more = note_cards(matching[3:], compact=True)
+                    group_blocks.append(f'<details class="section-more"><summary>更多行动指南</summary>{more}</details>')
             elif chapter:
-                group_blocks.append(f'<details class="section-more"><summary>{escape(chapter)}</summary>{listing}</details>')
+                state = " open" if position == 0 else ""
+                cards = note_cards(matching, compact=True)
+                group_blocks.append(f'<details class="section-more"{state}><summary>{escape(chapter)}</summary>{cards}</details>')
             else:
-                group_blocks.append(f'<div>{listing}</div>')
+                group_blocks.append(note_cards(matching))
         parts.append(f"""
         <section class="part" id="{section}">
           <h2>{label}</h2>
@@ -293,7 +286,7 @@ def main():
     groups, start = group_notes(notes)
     build_library(groups, start)
     assessment = (ROOT / "index.html").read_text(encoding="utf-8")
-    for name in ("favicon.png", *ASSET_URLS):
+    for name in ("favicon.png", "github.svg", *ASSET_URLS):
         url = ASSET_URLS.get(name, f"assets/{name}")
         assessment = assessment.replace(f'"site/assets/{name}"', f'"{url}"')
     (DEST / "index.html").write_text(assessment, encoding="utf-8")
@@ -302,10 +295,10 @@ def main():
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta http-equiv="refresh" content="0; url=./">
+  <meta http-equiv="refresh" content="0; url=./index.html">
   <title>打开 ADHD 自测</title>
 </head>
-<body><a href="./">打开 ADHD 自测</a></body>
+<body><a href="./index.html">打开 ADHD 自测</a></body>
 </html>
 """, encoding="utf-8")
     for note in notes:

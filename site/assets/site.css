@@ -117,13 +117,13 @@ h1, h2 { text-wrap: balance; }
 .header-tools { display: flex; align-items: center; gap: .9rem; }
 .github-link {
   display: inline-flex;
+  min-inline-size: var(--touch-target);
   min-block-size: var(--touch-target);
   align-items: center;
-  color: var(--muted);
-  font-size: .875rem;
-  white-space: nowrap;
+  justify-content: center;
 }
-.github-link:hover { color: var(--link); }
+.github-link:hover { opacity: .72; }
+:root[data-theme="dark"] .github-link img { filter: invert(1); }
 .toolbar-button {
   display: inline-flex;
   min-inline-size: var(--touch-target);

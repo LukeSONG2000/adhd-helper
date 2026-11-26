@@ -1,10 +1,4 @@
-.assessment-page {
-  --reading-width: 39rem;
-}
-.assessment-page .assessment {
-  width: min(var(--reading-width), calc(100% - 2rem));
-}
-.assessment:has(#s-home.active) { width: 100%; }
+.assessment-page .assessment { width: 100%; }
 .assessment {
   --p: var(--link);
   --p-dark: var(--link);
@@ -44,9 +38,9 @@
 .assessment .screen { display: none; }
 .assessment .screen.active {
   display: block;
-  padding-block: clamp(1.25rem, 3vw, 2.5rem);
-  margin-inline: auto;
+  padding-block: var(--docs-heading-space) 3.5rem;
 }
+.assessment .screen:not(#s-home) { max-width: 43rem; }
 .assessment .card {
   border: 1px solid var(--line);
   border-radius: var(--radius-card);
@@ -74,7 +68,6 @@
 }
 .assessment .screen-back { margin-block-end: .55rem; }
 
-.assessment .screen.active#s-home { padding: 0; }
 .assessment-overview .home-title {
   color: var(--ink);
   font-size: clamp(1.625rem, 3vw, 2.125rem);
@@ -127,19 +120,15 @@
 .assessment .scale-section { margin-block: 1.8rem 2.5rem; }
 .assessment .scale-section h2 { font-size: clamp(1.35rem, 2.6vw, 1.85rem); line-height: 1.2; margin-block-end: .65rem; }
 .assessment .entry-list {
-  margin: 0 0 .85rem;
+  margin: 0 0 1.15rem;
   padding: 0;
   list-style: none;
-  border-block-start: 1px solid var(--line);
 }
-.assessment .entry-list > li { border-block-end: 1px solid var(--line); }
+.assessment .entry-list > li { min-width: 0; }
 .assessment .entry {
-  display: block;
   inline-size: 100%;
-  border: 0;
-  background: transparent;
-  color: var(--ink);
-  padding: .8rem 0;
+  block-size: 100%;
+  gap: .5rem;
   text-align: start;
   overflow-wrap: anywhere;
 }
@@ -149,7 +138,7 @@
   color: var(--muted);
   font-size: .9375rem;
   line-height: 1.5;
-  margin-block-start: .375rem;
+  font-weight: 400;
 }
 .assessment .entry-foot {
   display: flex;
@@ -157,7 +146,7 @@
   justify-content: space-between;
   align-items: center;
   gap: .45rem .75rem;
-  margin-block-start: .6rem;
+  font-weight: 400;
 }
 .assessment .entry-summary, .assessment .entry-note {
   display: block;
@@ -343,12 +332,19 @@
 .img-save-card .btn-primary { margin-block-start: .8rem; }
 .img-save-card img { display: block; inline-size: 100%; block-size: auto; border-radius: .2rem; border: 1px solid var(--line); }
 
-@media (min-width: 38rem) {
-  .assessment .entry { position: relative; padding-inline-end: 5rem; }
-  .assessment .entry-action { position: absolute; inset: 50% 0 auto auto; transform: translateY(-50%); }
+@media (max-width: 45.999rem) {
+  .assessment .entry {
+    grid-template-columns: 3.5rem minmax(0, 1fr);
+    column-gap: .75rem;
+    padding: .75rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-card);
+  }
+  .assessment .entry .guide-cover { grid-column: 1; grid-row: 1 / span 3; width: 100%; border-radius: .6rem; }
+  .assessment .entry .guide-cover > span { transform: scale(.55); }
+  .assessment .entry > :not(.guide-cover) { grid-column: 2; }
 }
 @media (max-width: 37rem) {
-  .assessment .screen.active { padding-block-start: .7rem; }
   .home-title { margin-block-end: 1rem; }
   .assessment .quiz-actions {
     position: sticky;

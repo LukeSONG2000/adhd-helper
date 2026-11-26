@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>打开人生设计指南</title>
+</head>
+<body>
+  <a id="guide-link" href="https://lukesong2000.github.io/adhd-helper/guide.html">打开人生设计指南</a>
+  <script>
+    // The repository source can be opened directly as well as through the built site.
+    const online = document.getElementById("guide-link").href;
+    const preview = document.createElement("link");
+    const openGuide = url => location.replace(url + location.search + location.hash);
+    preview.rel = "stylesheet";
+    preview.href = "./_site/assets/guide.css";
+    preview.onload = () => openGuide("./_site/guide.html");
+    preview.onerror = () => openGuide(online);
+    document.head.append(preview);
+  </script>
+</body>
+</html>
