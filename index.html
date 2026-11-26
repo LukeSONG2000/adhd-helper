@@ -60,7 +60,7 @@ openLegacyGuideSection();
   <section class="screen" id="s-guide">
     <button class="back-btn screen-back" onclick="showHome()">返回量表目录</button>
     <h2 class="step-title" tabindex="-1" id="g-title"></h2>
-    <p id="g-rule" class="answer-rule"><span class="rule-label">作答范围</span> <strong id="g-focus"></strong></p>
+    <p id="g-rule" class="answer-rule">请根据<strong id="g-focus"></strong><span id="g-rule-end"></span></p>
     <p class="quiet-note" id="g-method" hidden></p>
     <p class="quiet-note" id="g-notice" hidden></p>
     <div class="btn-row">
@@ -523,7 +523,8 @@ const MODULES = [
     },
     guide: {
       title: "ASRS 成人 ADHD 自评量表",
-      focus: "最近半年"
+      focus: "最近半年",
+      instructionEnd: "的实际情况作答。"
     }
   },
   {
@@ -553,7 +554,8 @@ const MODULES = [
     },
     guide: {
       title: "WURS 童年回溯量表",
-      focus: "自己 8–12 岁时"
+      focus: "自己 8–12 岁时",
+      instructionEnd: "的表现作答。"
     }
   },
   {
@@ -666,6 +668,7 @@ const MODULES = [
     guide: {
       title: "BRIEF-A 执行功能核心摘录",
       focus: "最近一个月",
+      instructionEnd: "里做事时遇到的困难作答。",
       method: "没遇过的情境，可以估计自己完成的难度。"
     }
   },
@@ -768,7 +771,7 @@ const MODULES = [
     guide: {
       title: "PHQ-9 抑郁筛查",
       focus: "最近两周",
-      method: "按出现的天数作答。",
+      instructionEnd: "内每种情况出现的天数作答。",
       notice: "第 9 题涉及自伤念头。如果有相关念头，请及时寻求帮助。"
     }
   },
@@ -798,7 +801,8 @@ const MODULES = [
     },
     guide: {
       title: "GAD-7 焦虑筛查",
-      focus: "最近两周"
+      focus: "最近两周",
+      instructionEnd: "内每种情况出现的天数作答。"
     }
   },
   {
@@ -956,7 +960,8 @@ const MODULES = [
     },
     guide: {
       title: "PSQI 睡眠质量核心版",
-      focus: "最近一个月"
+      focus: "最近一个月",
+      instructionEnd: "的睡眠情况作答。"
     }
   },
   {
@@ -1228,6 +1233,7 @@ function openGuide(idx) {
   const g = curMod.guide;
   document.getElementById("g-title").textContent = g.title;
   document.getElementById("g-focus").textContent = g.focus;
+  document.getElementById("g-rule-end").textContent = g.instructionEnd || "作答。";
   setOptionalText("g-method", g.method);
   setOptionalText("g-notice", g.notice);
 

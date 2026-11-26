@@ -245,13 +245,10 @@
 }
 .assessment .answer-rule {
   margin-block-start: .9rem;
+  color: var(--muted);
   line-height: 1.5;
 }
-.assessment .rule-label {
-  color: var(--muted);
-  font-size: .875rem;
-  margin-inline-end: .35rem;
-}
+.assessment .answer-rule strong { color: var(--ink); }
 .assessment :is(.answer-rule strong, .safety-summary strong) { font-weight: 650; }
 .assessment :is(.quiet-note, .report-overview, .result-score) {
   margin-block-start: .5rem;
