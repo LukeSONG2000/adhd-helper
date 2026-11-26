@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-guide-page="./guide.html">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -8,7 +8,12 @@
 <script>
 function openLegacyGuideSection() {
   if (["#library", "#action", "#foundations", "#toolbox"].includes(location.hash)) {
-    location.replace("./guide.html" + location.search + location.hash);
+    const target = new URL(document.documentElement.dataset.guidePage, location.href);
+    const params = new URLSearchParams(location.search);
+    if (target.searchParams.has("v")) params.set("v", target.searchParams.get("v"));
+    target.search = params;
+    target.hash = location.hash;
+    location.replace(target);
   }
 }
 addEventListener("hashchange", openLegacyGuideSection);

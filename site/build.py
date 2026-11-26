@@ -18,7 +18,7 @@ DEST = ROOT / "_site"
 ASSETS = ROOT / "site" / "assets"
 ASSET_URLS = {
     name: f"assets/{name}?v={sha256((ASSETS / name).read_bytes()).hexdigest()[:12]}"
-    for name in ("site.css", "assessment.css", "guide.css", "appearance.js", "search.js")
+    for name in ("site.css", "assessment.css", "guide.css", "appearance.js", "search.js", "github.svg")
 }
 REPOSITORY = "https://github.com/LukeSONG2000/adhd-helper"
 GUIDE_PAGE = "guide.html"
@@ -28,6 +28,11 @@ SECTIONS = {
     "toolbox": "ADHD 实用工具箱",
 }
 MARKDOWN = MarkdownIt("gfm-like", {"html": False, "linkify": False})
+PAGE_LINK = re.compile(
+    r'(?P<prefix>\b(?:href|data-guide-page)="|\burl=)'
+    r'(?P<path>(?:\.{1,2}/)*(?:index|test|guide(?:/[a-z0-9/-]+)?)\.html)'
+    r'(?P<fragment>#[^"]*)?(?=")'
+)
 
 
 @dataclass(frozen=True)
@@ -88,7 +93,7 @@ def shell(title, content, groups, start, base="", current=None):
     <div class="wrap header-line">
       <a class="wordmark" href="{base}index.html"><span class="mark" aria-hidden="true"></span>ADHD Helper</a>
       <div class="header-tools">
-        <a class="github-link" href="{REPOSITORY}" aria-label="GitHub" title="GitHub"><img src="{base}assets/github.svg" width="20" height="20" alt=""></a>
+        <a class="github-link" href="{REPOSITORY}" aria-label="GitHub" title="GitHub"><img src="{base}{ASSET_URLS['github.svg']}" width="20" height="20" alt=""></a>
         {appearance_button()}
       </div>
     </div>
@@ -278,6 +283,21 @@ def build_downloads():
             archive.writestr(note.relative_to(NOTES.parent).as_posix(), note.read_bytes())
 
 
+def version_page_links():
+    pages = [(path, path.read_text(encoding="utf-8")) for path in sorted(DEST.rglob("*.html"))]
+    digest = sha256()
+    for path, markup in pages:
+        digest.update(f"{path.relative_to(DEST).as_posix()}\0{markup}\0".encode())
+    version = digest.hexdigest()[:12]
+
+    def versioned(match):
+        prefix, path, fragment = match.groups()
+        return f"{prefix}{path}?v={version}{fragment or ''}"
+
+    for path, markup in pages:
+        path.write_text(PAGE_LINK.sub(versioned, markup), encoding="utf-8")
+
+
 def main():
     if DEST.is_dir():
         shutil.rmtree(DEST)
@@ -286,7 +306,7 @@ def main():
     groups, start = group_notes(notes)
     build_library(groups, start)
     assessment = (ROOT / "index.html").read_text(encoding="utf-8")
-    for name in ("favicon.png", "github.svg", *ASSET_URLS):
+    for name in ("favicon.png", *ASSET_URLS):
         url = ASSET_URLS.get(name, f"assets/{name}")
         assessment = assessment.replace(f'"site/assets/{name}"', f'"{url}"')
     (DEST / "index.html").write_text(assessment, encoding="utf-8")
@@ -303,6 +323,7 @@ def main():
 """, encoding="utf-8")
     for note in notes:
         build_note(note, groups, start)
+    version_page_links()
     searchable = {
         note.url: " ".join((note.title, SECTIONS.get(note.section, ""), note.chapter, note.body))
         for note in notes
