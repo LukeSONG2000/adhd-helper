@@ -1,3 +1,12 @@
+.assessment-page {
+  --reading-width: 39rem;
+}
+.assessment-page .wrap {
+  width: min(var(--reading-width), calc(100% - 2rem));
+}
+.assessment-page .header-line {
+  min-block-size: 3.5rem;
+}
 .assessment {
   --p: var(--link);
   --p-dark: var(--link);
@@ -42,11 +51,10 @@
   padding-block: clamp(1.75rem, 5vw, 4rem);
   margin-inline: auto;
 }
-.assessment .screen:not(#s-home) { max-inline-size: 46rem; }
 .assessment .card,
 .assessment .sec {
   border: 1px solid var(--line);
-  border-radius: .55rem;
+  border-radius: .875rem;
   background: var(--surface);
   padding: clamp(1rem, 3.5vw, 1.65rem);
 }
@@ -56,7 +64,7 @@
   justify-content: center;
   min-block-size: 2.75rem;
   border: 1px solid transparent;
-  border-radius: .4rem;
+  border-radius: .625rem;
   padding: .62rem 1rem;
   font-weight: 700;
   text-align: center;
@@ -89,17 +97,20 @@
 }
 .assessment .screen-back { margin-block-end: .55rem; }
 
-.assessment .screen.active#s-home { padding-block-start: 1rem; }
-.home-progress {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: .55rem;
-  padding: .8rem .95rem;
-  margin-block-end: .75rem;
+.assessment .screen.active#s-home { padding-block-start: 1.5rem; }
+.home-title {
+  color: var(--ink);
+  font-size: 1.375rem;
+  font-weight: 700;
+  line-height: 1.3;
+  margin-block-end: 1.25rem;
 }
-.home-progress h1 { color: var(--ink); font-size: 1.05rem; font-weight: 750; }
+.home-progress {
+  margin-block-end: 1.25rem;
+  font-size: .875rem;
+}
 .assessment .home-note {
-  margin-block-start: .75rem;
+  margin-block-start: 1rem;
   color: var(--muted);
   font-size: .875rem;
 }
@@ -131,12 +142,8 @@
 
 .assessment .tabs {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: .3rem;
-  border: 1px solid var(--line);
-  background: var(--surface);
-  border-radius: .55rem;
-  padding: .3rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 4rem), 1fr));
+  gap: .5rem;
 }
 .assessment .tab {
   display: flex;
@@ -148,56 +155,83 @@
   padding: .25rem .15rem;
   line-height: 1.3;
   font-size: .94rem;
-  border: 1px solid transparent;
-  border-radius: .34rem;
+  border: 1px solid var(--line);
+  border-radius: .65rem;
   color: var(--muted);
   background: transparent;
 }
-.assessment .tab:hover { border-color: var(--line); }
+.assessment .tab:hover { border-color: var(--link); }
+.assessment :is(.tab, .entry, .tab-report, .comp-entry):focus-visible {
+  outline-width: 2px;
+  outline-offset: 2px;
+}
 .assessment .tab[aria-pressed="true"] {
   color: var(--ink);
   background: var(--soft-green);
-  border-color: var(--line);
-  font-weight: 750;
+  border-color: var(--link);
+  font-weight: 700;
 }
 .assessment .tab-count { font-size: .8125rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.assessment .scale-section { margin-block: .75rem; }
-.assessment .entry-list { display: grid; gap: .55rem; }
+.assessment .scale-section { margin-block: 1rem; }
+.assessment .entry-list {
+  display: grid;
+  gap: .75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
 .assessment .entry {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: .5rem .75rem;
+  display: block;
   inline-size: 100%;
-  min-block-size: 4.3rem;
   border: 1px solid var(--line);
-  border-radius: .55rem;
+  border-radius: .875rem;
   background: var(--surface);
   color: var(--ink);
-  padding: .65rem .85rem;
+  padding: .875rem 1rem;
   text-align: start;
   overflow-wrap: anywhere;
 }
-.assessment .entry-copy { min-inline-size: 0; }
-.assessment .entry-title { display: block; font-size: 1rem; font-weight: 750; line-height: 1.4; }
+.assessment .entry-title { display: block; font-size: 1.0625rem; font-weight: 700; line-height: 1.4; }
+.assessment .entry-purpose {
+  display: block;
+  color: var(--muted);
+  font-size: .9375rem;
+  line-height: 1.5;
+  margin-block-start: .25rem;
+}
+.assessment .entry-foot {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: .45rem .75rem;
+  margin-block-start: .6rem;
+}
+.assessment .entry.complete .entry-foot {
+  border-block-start: 1px solid var(--line);
+  padding-block-start: .6rem;
+}
 .assessment .entry-summary, .assessment .entry-note {
   display: block;
   color: var(--muted);
   font-size: .875rem;
   line-height: 1.4;
-  margin-block-start: .22rem;
 }
-.assessment .entry:hover { border-color: var(--link); }
+.assessment .entry-summary span { display: block; }
+.assessment .entry.complete .entry-summary span:last-child { color: var(--ink); }
+.assessment .entry-note { margin-block-start: .22rem; }
+.assessment .entry:hover, .assessment :is(.tab-report, .comp-entry):hover { border-color: var(--link); }
 .assessment .entry-action, .assessment .report-action {
   flex: none;
   color: var(--link);
   background: var(--soft-green);
-  border-radius: .35rem;
-  padding: .35rem .54rem;
+  border-radius: .5rem;
+  padding: .3rem .55rem;
   font-size: .875rem;
   font-weight: 700;
 }
 .assessment .report-action { background: transparent; padding-inline-end: 0; }
+.assessment .report-list { display: grid; gap: .65rem; }
 .assessment .tr-badge, .assessment .mini-tag {
   display: inline-block;
   border-radius: .25rem;
@@ -213,16 +247,18 @@
   justify-content: space-between;
   gap: .65rem 1.15rem;
   inline-size: 100%;
-  padding: .75rem .85rem;
+  min-block-size: 2.75rem;
+  padding: .75rem 1rem;
   border: 1px solid var(--line);
-  border-radius: .5rem;
+  border-radius: .875rem;
   color: var(--ink);
   background: var(--soft-green);
   text-align: start;
 }
-.assessment .tab-report { grid-column: 1 / -1; }
-.assessment .tab-report:not(.unlocked) { background: transparent; }
-.assessment .comp-entry { background: var(--surface); }
+.assessment .tab-report:not(.unlocked), .assessment .comp-entry:not(.unlocked) { background: transparent; }
+.assessment .comp-entry.unlocked { background: var(--green); color: var(--on-green); }
+.assessment .comp-entry.unlocked .report-action { color: inherit; }
+.assessment .tr-badge { flex: none; }
 .assessment :is(.tab-report, .comp-entry, .tab-unlock-note):hover :is(.tr-title, .entry-title, .t1) { text-decoration: underline; }
 .assessment .tr-main, .assessment .tab-unlock-note .tx { flex: 1; min-inline-size: 0; }
 .assessment .tr-title, .assessment .tab-unlock-note .t1 { font-weight: 750; }
@@ -230,8 +266,8 @@
 .assessment .tab-unlock-note { margin-block-start: 1rem; }
 .assessment .tab-unlock-note .t1, .assessment .tab-unlock-note .t2 { display: block; }
 .assessment .tr-icon { display: none; }
-.assessment .tr-mini-bar, .assessment .dim-bar { height: .35rem; margin-block-start: .5rem; background: var(--line); border-radius: 999px; }
-.assessment .tr-mini-fill, .assessment .dim-fill { height: 100%; background: var(--link); border-radius: 999px; }
+.assessment .dim-bar { height: .35rem; margin-block-start: .5rem; background: var(--line); border-radius: 999px; }
+.assessment .dim-fill { height: 100%; background: var(--link); border-radius: 999px; }
 
 .assessment :is(.guide-head, .res-head, .report-head) h2 {
   font: 750 clamp(1.25rem, 2.6vw, 1.65rem)/1.32 var(--sans);
@@ -325,15 +361,16 @@
 .img-save-card .btn-primary { color: var(--on-green); margin-block-start: .8rem; }
 .img-save-card img { display: block; inline-size: 100%; block-size: auto; border-radius: .2rem; border: 1px solid var(--line); }
 
-@media (min-width: 55rem) {
-  .assessment .entry-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (min-width: 38rem) {
   .assessment .tab { flex-direction: row; gap: .5rem; }
 }
 @media (max-width: 37rem) {
+  .assessment-page .header-line { min-block-size: 3.15rem; }
   .assessment .screen.active { padding-block-start: .7rem; }
-  .assessment .screen.active#s-home { padding-block-start: .7rem; }
-  .assessment .tab { font-size: .875rem; }
-  .assessment .entry { min-block-size: 4rem; padding-inline: .7rem; }
+  .assessment .screen.active#s-home { padding-block-start: 1rem; }
+  .home-title { font-size: 1.25rem; margin-block-end: 1rem; }
+  .assessment .tab { font-size: .875rem; overflow-wrap: anywhere; }
+  .assessment .entry { padding: .75rem .875rem; }
   .assessment .info-cell { padding-inline: .5rem; }
   .assessment .quiz-actions {
     position: sticky;

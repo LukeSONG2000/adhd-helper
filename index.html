@@ -18,7 +18,7 @@ openLegacyGuideSection();
 <link rel="stylesheet" href="site/assets/site.css">
 <link rel="stylesheet" href="site/assets/assessment.css">
 </head>
-<body>
+<body class="assessment-page">
 <a class="skip-link" href="#main">跳到正文</a>
 <header class="site-header">
   <div class="wrap header-line">
@@ -35,13 +35,17 @@ openLegacyGuideSection();
 
   <!-- ================= 首页 ================= -->
   <section class="screen" id="s-home">
+    <h1 class="home-title" tabindex="-1">ADHD 自测</h1>
     <div class="home-progress" id="home-progress"></div>
     <div class="tabs" id="tabs" role="group" aria-label="量表分类"></div>
     <section class="scale-section" aria-labelledby="scale-heading">
       <h2 id="scale-heading" class="visually-hidden"></h2>
-      <div class="entry-list" id="entry-list"></div>
+      <ul class="entry-list" id="entry-list" role="list"></ul>
     </section>
-    <div id="comp-slot"></div>
+    <div class="report-list">
+      <div id="tab-report-slot"></div>
+      <div id="comp-slot"></div>
+    </div>
     <div class="home-tools">
       <button class="btn btn-outline" id="export-report" onclick="showReportImage()">导出报告图片</button>
       <button class="btn btn-ghost" id="clear-results" onclick="resetTest()">清除本机进度</button>
@@ -610,7 +614,7 @@ const MODULES = [
   {
     id: "aq", tab: "core", icon: "🧩", color: "#f3f0ff",
     name: "AQ-Short 孤独谱系特质",
-    desc: "28 题，评估 ASD 相关特质",
+    desc: "评估孤独谱系相关特质",
     note: "28 题 · 约 4 分钟 · 4 级",
     time: "4", items: AQ_ITEMS, opts: O.aq4, rev: AQ_REV,
     detail(a) { return {}; },
@@ -687,7 +691,7 @@ const MODULES = [
   {
     id: "catq", tab: "deep", icon: "🎭", color: "#f5f0ff",
     name: "CAT-Q 社交伪装代价",
-    desc: "10 题，评估你为显得正常付出多少",
+    desc: "评估你在社交中隐藏或补偿自身特质的程度",
     note: "10 题 · 约 2 分钟 · 4 级",
     time: "2", items: CATQ_ITEMS, opts: O.a4,
     detail(a) { return {}; },
@@ -1189,20 +1193,25 @@ function renderEntries() {
     const result = currentResult(m);
     const index = MODULES.indexOf(m);
     const count = answeredCount(m);
-    const detail = result ? escapeHtml(summaryOf(m, result))
-      : count > 0 ? `已答 ${count} / ${m.items.length} 题` : `${m.items.length} 题 · 约 ${m.time} 分钟`;
+    const details = result ? summaryOf(m, result).split(" | ")
+      : count > 0 ? [`已答 ${count} / ${m.items.length} 题`]
+      : [`${m.items.length} 题 · 约 ${m.time} 分钟`];
     const action = result ? "查看结果" : count > 0 ? "继续" : "开始";
     const open = result ? `viewResult('${m.id}')` : `openGuide(${index})`;
-    return `<button class="entry" type="button" onclick="${open}" aria-labelledby="scale-${m.id} action-${m.id}" aria-describedby="detail-${m.id}">
-      <span class="entry-copy">
+    return `<li>
+      <button class="entry${result ? " complete" : ""}" type="button" onclick="${open}" aria-labelledby="scale-${m.id} action-${m.id}" aria-describedby="purpose-${m.id} detail-${m.id}">
         <span class="entry-title" id="scale-${m.id}">${m.name}</span>
-        <span class="entry-summary" id="detail-${m.id}">${detail}</span>
-      </span>
-      <span class="entry-action" id="action-${m.id}">${action}</span>
-    </button>`;
+        <span class="entry-purpose" id="purpose-${m.id}">${escapeHtml(m.desc)}</span>
+        <span class="entry-foot">
+          <span class="entry-summary" id="detail-${m.id}">${details.map(text => `<span>${escapeHtml(text)}</span>`).join("")}</span>
+          <span class="entry-action" id="action-${m.id}">${action}</span>
+        </span>
+      </button>
+    </li>`;
   }).join("");
 
-  document.getElementById("entry-list").innerHTML = cards + tabReportCard(activeTab);
+  document.getElementById("entry-list").innerHTML = cards;
+  document.getElementById("tab-report-slot").innerHTML = tabReportCard(activeTab);
 }
 
 /* 每个 Tab 底部的本模块汇总报告入口 */
@@ -1216,18 +1225,17 @@ function tabReportCard(tabId) {
     return `<button class="tab-report unlocked" onclick="openTabReport('${tabId}')">
       <div class="tr-icon">🗂️</div>
       <div class="tr-main">
-        <div class="tr-title">查看本模块汇总报告</div>
-        <div class="tr-desc">${t.name} · ${all} 项已完成</div>
+        <div class="tr-title">${t.name}汇总报告</div>
+        <div class="tr-desc">已完成 ${all} 项量表</div>
       </div>
-      <div class="tr-badge">${st.viewed ? "已查看" : "可查看 →"}</div>
+      <div class="tr-badge">${st.viewed ? "再次查看" : "查看报告"}</div>
     </button>`;
   }
   return `<button class="tab-report" onclick="tabLocked('${tabId}')">
     <div class="tr-icon">🔒</div>
     <div class="tr-main">
-      <div class="tr-title">本模块汇总报告</div>
+      <div class="tr-title">${t.name}汇总报告</div>
       <div class="tr-desc">完成本组量表后可查看</div>
-      <div class="tr-mini-bar"><div class="tr-mini-fill" style="width:${Math.round(done / all * 100)}%"></div></div>
     </div>
     <div class="tr-badge">${done}/${all}</div>
   </button>`;
@@ -1237,15 +1245,16 @@ function renderHomeProgress() {
   const done = MODULES.filter(m => state.results[m.id]).length;
   const total = MODULES.length;
   document.getElementById("home-progress").innerHTML = `
-    <div class="progress-row"><h1 tabindex="-1">自测进度</h1><strong>${done} / ${total} 项</strong></div>
+    <div class="progress-row"><span>整体进度</span><strong>已完成 ${done} / ${total} 项</strong></div>
     <progress class="bar" aria-label="已完成量表数" max="${total}" value="${done}"></progress>`;
 }
 
 function renderCompSlot() {
   const done = MODULES.filter(m => state.results[m.id]).length;
   const total = MODULES.length;
-  const action = done === total ? "查看报告" : `${done}/${total} 项`;
-  document.getElementById("comp-slot").innerHTML = `<button class="comp-entry" onclick="showComprehensive()">
+  const complete = done === total;
+  const action = complete ? "查看报告" : `${done}/${total} 项`;
+  document.getElementById("comp-slot").innerHTML = `<button class="comp-entry${complete ? " unlocked" : ""}" onclick="showComprehensive()">
     <span class="entry-title">综合报告</span>
     <span class="report-action">${action}</span>
   </button>`;
